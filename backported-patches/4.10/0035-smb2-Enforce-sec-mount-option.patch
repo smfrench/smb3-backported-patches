@@ -1,0 +1,217 @@
+From ef65aaede23f75977af56a8c330bb9be8c6e125c Mon Sep 17 00:00:00 2001
+From: Sachin Prabhu <sprabhu@redhat.com>
+Date: Wed, 18 Jan 2017 15:35:57 +0530
+Subject: [PATCH 035/204] smb2: Enforce sec= mount option
+
+If the security type specified using a mount option is not supported,
+the SMB2 session setup code changes the security type to RawNTLMSSP. We
+should instead fail the mount and return an error.
+
+The patch changes the code for SMB2 to make it similar to the code used
+for SMB1. Like in SMB1, we now use the global security flags to select
+the security method to be used when no security method is specified and
+to return an error when the requested auth method is not available.
+
+For SMB2, we also use ntlmv2 as a synonym for nltmssp.
+
+Signed-off-by: Sachin Prabhu <sprabhu@redhat.com>
+Acked-by: Pavel Shilovsky <pshilov@microsoft.com>
+Acked-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/cifsglob.h  |  3 +++
+ fs/cifs/cifsproto.h |  2 ++
+ fs/cifs/connect.c   |  3 ++-
+ fs/cifs/sess.c      |  4 ++--
+ fs/cifs/smb1ops.c   |  1 +
+ fs/cifs/smb2ops.c   |  4 ++++
+ fs/cifs/smb2pdu.c   | 37 +++++++++++++++++++++++++++++++++----
+ fs/cifs/smb2proto.h |  2 ++
+ 8 files changed, 49 insertions(+), 7 deletions(-)
+
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index af224cda8697..d42dd3288647 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -443,6 +443,9 @@ struct smb_version_operations {
+ 	int (*is_transform_hdr)(void *buf);
+ 	int (*receive_transform)(struct TCP_Server_Info *,
+ 				 struct mid_q_entry **);
++	enum securityEnum (*select_sectype)(struct TCP_Server_Info *,
++			    enum securityEnum);
++
+ };
+ 
+ struct smb_version_values {
+diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
+index 9ee46c1c3ebd..97e5d236d265 100644
+--- a/fs/cifs/cifsproto.h
++++ b/fs/cifs/cifsproto.h
+@@ -533,4 +533,6 @@ int cifs_create_mf_symlink(unsigned int xid, struct cifs_tcon *tcon,
+ int __cifs_calc_signature(struct smb_rqst *rqst,
+ 			struct TCP_Server_Info *server, char *signature,
+ 			struct shash_desc *shash);
++enum securityEnum cifs_select_sectype(struct TCP_Server_Info *,
++					enum securityEnum);
+ #endif			/* _CIFSPROTO_H */
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 777ad9f4fc3c..de4c56e8fb37 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -2073,7 +2073,8 @@ match_security(struct TCP_Server_Info *server, struct smb_vol *vol)
+ 	 * that was specified, or "Unspecified" if that sectype was not
+ 	 * compatible with the given NEGOTIATE request.
+ 	 */
+-	if (select_sectype(server, vol->sectype) == Unspecified)
++	if (server->ops->select_sectype(server, vol->sectype)
++	     == Unspecified)
+ 		return false;
+ 
+ 	/*
+diff --git a/fs/cifs/sess.c b/fs/cifs/sess.c
+index dcbcc927399a..8b0502cd39af 100644
+--- a/fs/cifs/sess.c
++++ b/fs/cifs/sess.c
+@@ -498,7 +498,7 @@ int build_ntlmssp_auth_blob(unsigned char **pbuffer,
+ }
+ 
+ enum securityEnum
+-select_sectype(struct TCP_Server_Info *server, enum securityEnum requested)
++cifs_select_sectype(struct TCP_Server_Info *server, enum securityEnum requested)
+ {
+ 	switch (server->negflavor) {
+ 	case CIFS_NEGFLAVOR_EXTENDED:
+@@ -1391,7 +1391,7 @@ static int select_sec(struct cifs_ses *ses, struct sess_data *sess_data)
+ {
+ 	int type;
+ 
+-	type = select_sectype(ses->server, ses->sectype);
++	type = cifs_select_sectype(ses->server, ses->sectype);
+ 	cifs_dbg(FYI, "sess setup type %d\n", type);
+ 	if (type == Unspecified) {
+ 		cifs_dbg(VFS,
+diff --git a/fs/cifs/smb1ops.c b/fs/cifs/smb1ops.c
+index 67a987e4d026..cc93ba4da9b5 100644
+--- a/fs/cifs/smb1ops.c
++++ b/fs/cifs/smb1ops.c
+@@ -1087,6 +1087,7 @@ struct smb_version_operations smb1_operations = {
+ 	.is_read_op = cifs_is_read_op,
+ 	.wp_retry_size = cifs_wp_retry_size,
+ 	.dir_needs_close = cifs_dir_needs_close,
++	.select_sectype = cifs_select_sectype,
+ #ifdef CONFIG_CIFS_XATTR
+ 	.query_all_EAs = CIFSSMBQAllEAs,
+ 	.set_EA = CIFSSMBSetEA,
+diff --git a/fs/cifs/smb2ops.c b/fs/cifs/smb2ops.c
+index b360c381b00e..0231108d9387 100644
+--- a/fs/cifs/smb2ops.c
++++ b/fs/cifs/smb2ops.c
+@@ -2381,6 +2381,7 @@ struct smb_version_operations smb20_operations = {
+ 	.wp_retry_size = smb2_wp_retry_size,
+ 	.dir_needs_close = smb2_dir_needs_close,
+ 	.get_dfs_refer = smb2_get_dfs_refer,
++	.select_sectype = smb2_select_sectype,
+ };
+ 
+ struct smb_version_operations smb21_operations = {
+@@ -2463,6 +2464,7 @@ struct smb_version_operations smb21_operations = {
+ 	.dir_needs_close = smb2_dir_needs_close,
+ 	.enum_snapshots = smb3_enum_snapshots,
+ 	.get_dfs_refer = smb2_get_dfs_refer,
++	.select_sectype = smb2_select_sectype,
+ };
+ 
+ struct smb_version_operations smb30_operations = {
+@@ -2555,6 +2557,7 @@ struct smb_version_operations smb30_operations = {
+ 	.is_transform_hdr = smb3_is_transform_hdr,
+ 	.receive_transform = smb3_receive_transform,
+ 	.get_dfs_refer = smb2_get_dfs_refer,
++	.select_sectype = smb2_select_sectype,
+ };
+ 
+ #ifdef CONFIG_CIFS_SMB311
+@@ -2648,6 +2651,7 @@ struct smb_version_operations smb311_operations = {
+ 	.is_transform_hdr = smb3_is_transform_hdr,
+ 	.receive_transform = smb3_receive_transform,
+ 	.get_dfs_refer = smb2_get_dfs_refer,
++	.select_sectype = smb2_select_sectype,
+ };
+ #endif /* CIFS_SMB311 */
+ 
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index 2069431b32e3..7446496850a3 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -657,6 +657,28 @@ int smb3_validate_negotiate(const unsigned int xid, struct cifs_tcon *tcon)
+ 	return -EIO;
+ }
+ 
++enum securityEnum
++smb2_select_sectype(struct TCP_Server_Info *server, enum securityEnum requested)
++{
++	switch (requested) {
++	case Kerberos:
++	case RawNTLMSSP:
++		return requested;
++	case NTLMv2:
++		return RawNTLMSSP;
++	case Unspecified:
++		if (server->sec_ntlmssp &&
++			(global_secflags & CIFSSEC_MAY_NTLMSSP))
++			return RawNTLMSSP;
++		if ((server->sec_kerberos || server->sec_mskerberos) &&
++			(global_secflags & CIFSSEC_MAY_KRB5))
++			return Kerberos;
++		/* Fallthrough */
++	default:
++		return Unspecified;
++	}
++}
++
+ struct SMB2_sess_data {
+ 	unsigned int xid;
+ 	struct cifs_ses *ses;
+@@ -1009,10 +1031,17 @@ SMB2_sess_auth_rawntlmssp_authenticate(struct SMB2_sess_data *sess_data)
+ static int
+ SMB2_select_sec(struct cifs_ses *ses, struct SMB2_sess_data *sess_data)
+ {
+-	if (ses->sectype != Kerberos && ses->sectype != RawNTLMSSP)
+-		ses->sectype = RawNTLMSSP;
++	int type;
++
++	type = smb2_select_sectype(ses->server, ses->sectype);
++	cifs_dbg(FYI, "sess setup type %d\n", type);
++	if (type == Unspecified) {
++		cifs_dbg(VFS,
++			"Unable to select appropriate authentication method!");
++		return -EINVAL;
++	}
+ 
+-	switch (ses->sectype) {
++	switch (type) {
+ 	case Kerberos:
+ 		sess_data->func = SMB2_auth_kerberos;
+ 		break;
+@@ -1020,7 +1049,7 @@ SMB2_select_sec(struct cifs_ses *ses, struct SMB2_sess_data *sess_data)
+ 		sess_data->func = SMB2_sess_auth_rawntlmssp_negotiate;
+ 		break;
+ 	default:
+-		cifs_dbg(VFS, "secType %d not supported!\n", ses->sectype);
++		cifs_dbg(VFS, "secType %d not supported!\n", type);
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+diff --git a/fs/cifs/smb2proto.h b/fs/cifs/smb2proto.h
+index 11d9f3013db8..69e35873b1de 100644
+--- a/fs/cifs/smb2proto.h
++++ b/fs/cifs/smb2proto.h
+@@ -181,4 +181,6 @@ extern int SMB2_lease_break(const unsigned int xid, struct cifs_tcon *tcon,
+ 			    __u8 *lease_key, const __le32 lease_state);
+ extern int smb3_validate_negotiate(const unsigned int, struct cifs_tcon *);
+ 
++extern enum securityEnum smb2_select_sectype(struct TCP_Server_Info *,
++					enum securityEnum);
+ #endif			/* _SMB2PROTO_H */
+-- 
+2.14.1
+

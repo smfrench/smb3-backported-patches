@@ -1,0 +1,31 @@
+From 4328fea77ca30ef6af938ae3f263a3d055a9c0e6 Mon Sep 17 00:00:00 2001
+From: Karim Eshapa <karim.eshapa@gmail.com>
+Date: Fri, 12 May 2017 01:53:38 +0200
+Subject: [PATCH 071/204] fs: cifs: transport: Use time_after for time
+ comparison
+
+Use time_after kernel macro for time comparison
+that has safety check.
+
+Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/transport.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index de589d0d3739..47a125ece11e 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -94,7 +94,7 @@ DeleteMidQEntry(struct mid_q_entry *midEntry)
+ 	now = jiffies;
+ 	/* commands taking longer than one second are indications that
+ 	   something is wrong, unless it is quite a slow link or server */
+-	if ((now - midEntry->when_alloc) > HZ) {
++	if (time_after(now, midEntry->when_alloc + HZ)) {
+ 		if ((cifsFYI & CIFS_TIMER) && (midEntry->command != command)) {
+ 			pr_debug(" CIFS slow rsp: cmd %d mid %llu",
+ 			       midEntry->command, midEntry->mid);
+-- 
+2.14.1
+

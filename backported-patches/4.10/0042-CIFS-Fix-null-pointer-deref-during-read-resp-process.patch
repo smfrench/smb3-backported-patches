@@ -1,0 +1,117 @@
+From 350be257ea83029daee974c72b1fe2e6f1f8e615 Mon Sep 17 00:00:00 2001
+From: Pavel Shilovsky <pshilov@microsoft.com>
+Date: Mon, 10 Apr 2017 10:31:33 -0700
+Subject: [PATCH 042/204] CIFS: Fix null pointer deref during read resp
+ processing
+
+Currently during receiving a read response mid->resp_buf can be
+NULL when it is being passed to cifs_discard_remaining_data() from
+cifs_readv_discard(). Fix it by always passing server->smallbuf
+instead and initializing mid->resp_buf at the end of read response
+processing.
+
+Signed-off-by: Pavel Shilovsky <pshilov@microsoft.com>
+CC: Stable <stable@vger.kernel.org>
+Acked-by: Sachin Prabhu <sprabhu@redhat.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/cifsproto.h |  3 +--
+ fs/cifs/cifssmb.c   | 15 ++++++++-------
+ fs/cifs/smb2ops.c   |  4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
+index ec5e5e514fdd..97e5d236d265 100644
+--- a/fs/cifs/cifsproto.h
++++ b/fs/cifs/cifsproto.h
+@@ -79,8 +79,7 @@ extern void cifs_delete_mid(struct mid_q_entry *mid);
+ extern void cifs_wake_up_task(struct mid_q_entry *mid);
+ extern int cifs_handle_standard(struct TCP_Server_Info *server,
+ 				struct mid_q_entry *mid);
+-extern int cifs_discard_remaining_data(struct TCP_Server_Info *server,
+-				       char *buf);
++extern int cifs_discard_remaining_data(struct TCP_Server_Info *server);
+ extern int cifs_call_async(struct TCP_Server_Info *server,
+ 			struct smb_rqst *rqst,
+ 			mid_receive_t *receive, mid_callback_t *callback,
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 967b92631807..5d21f00ae341 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -1400,9 +1400,9 @@ CIFS_open(const unsigned int xid, struct cifs_open_parms *oparms, int *oplock,
+  * current bigbuf.
+  */
+ int
+-cifs_discard_remaining_data(struct TCP_Server_Info *server, char *buf)
++cifs_discard_remaining_data(struct TCP_Server_Info *server)
+ {
+-	unsigned int rfclen = get_rfc1002_length(buf);
++	unsigned int rfclen = get_rfc1002_length(server->smallbuf);
+ 	int remaining = rfclen + 4 - server->total_read;
+ 
+ 	while (remaining > 0) {
+@@ -1426,8 +1426,10 @@ cifs_readv_discard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
+ 	int length;
+ 	struct cifs_readdata *rdata = mid->callback_data;
+ 
+-	length = cifs_discard_remaining_data(server, mid->resp_buf);
++	length = cifs_discard_remaining_data(server);
+ 	dequeue_mid(mid, rdata->result);
++	mid->resp_buf = server->smallbuf;
++	server->smallbuf = NULL;
+ 	return length;
+ }
+ 
+@@ -1459,7 +1461,7 @@ cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
+ 
+ 	if (server->ops->is_status_pending &&
+ 	    server->ops->is_status_pending(buf, server, 0)) {
+-		cifs_discard_remaining_data(server, buf);
++		cifs_discard_remaining_data(server);
+ 		return -1;
+ 	}
+ 
+@@ -1519,9 +1521,6 @@ cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
+ 	cifs_dbg(FYI, "0: iov_base=%p iov_len=%u\n",
+ 		 rdata->iov[0].iov_base, server->total_read);
+ 
+-	mid->resp_buf = server->smallbuf;
+-	server->smallbuf = NULL;
+-
+ 	/* how much data is in the response? */
+ 	data_len = server->ops->read_data_length(buf);
+ 	if (data_offset + data_len > buflen) {
+@@ -1544,6 +1543,8 @@ cifs_readv_receive(struct TCP_Server_Info *server, struct mid_q_entry *mid)
+ 		return cifs_readv_discard(server, mid);
+ 
+ 	dequeue_mid(mid, false);
++	mid->resp_buf = server->smallbuf;
++	server->smallbuf = NULL;
+ 	return length;
+ }
+ 
+diff --git a/fs/cifs/smb2ops.c b/fs/cifs/smb2ops.c
+index 7b12a727947e..152e37f2ad92 100644
+--- a/fs/cifs/smb2ops.c
++++ b/fs/cifs/smb2ops.c
+@@ -2195,7 +2195,7 @@ receive_encrypted_read(struct TCP_Server_Info *server, struct mid_q_entry **mid)
+ 	if (rc)
+ 		goto free_pages;
+ 
+-	rc = cifs_discard_remaining_data(server, buf);
++	rc = cifs_discard_remaining_data(server);
+ 	if (rc)
+ 		goto free_pages;
+ 
+@@ -2221,7 +2221,7 @@ receive_encrypted_read(struct TCP_Server_Info *server, struct mid_q_entry **mid)
+ 	kfree(pages);
+ 	return rc;
+ discard_data:
+-	cifs_discard_remaining_data(server, buf);
++	cifs_discard_remaining_data(server);
+ 	goto free_pages;
+ }
+ 
+-- 
+2.14.1
+

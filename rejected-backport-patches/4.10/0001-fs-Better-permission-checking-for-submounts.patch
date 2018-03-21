@@ -1,0 +1,92 @@
+From 93faccbbfa958a9668d3ab4e30f38dd205cee8d8 Mon Sep 17 00:00:00 2001
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+Date: Wed, 1 Feb 2017 06:06:16 +1300
+Subject: [PATCH 001/204] fs: Better permission checking for submounts
+
+To support unprivileged users mounting filesystems two permission
+checks have to be performed: a test to see if the user allowed to
+create a mount in the mount namespace, and a test to see if
+the user is allowed to access the specified filesystem.
+
+The automount case is special in that mounting the original filesystem
+grants permission to mount the sub-filesystems, to any user who
+happens to stumble across the their mountpoint and satisfies the
+ordinary filesystem permission checks.
+
+Attempting to handle the automount case by using override_creds
+almost works.  It preserves the idea that permission to mount
+the original filesystem is permission to mount the sub-filesystem.
+Unfortunately using override_creds messes up the filesystems
+ordinary permission checks.
+
+Solve this by being explicit that a mount is a submount by introducing
+vfs_submount, and using it where appropriate.
+
+vfs_submount uses a new mount internal mount flags MS_SUBMOUNT, to let
+sget and friends know that a mount is a submount so they can take appropriate
+action.
+
+sget and sget_userns are modified to not perform any permission checks
+on submounts.
+
+follow_automount is modified to stop using override_creds as that
+has proven problemantic.
+
+do_mount is modified to always remove the new MS_SUBMOUNT flag so
+that we know userspace will never by able to specify it.
+
+autofs4 is modified to stop using current_real_cred that was put in
+there to handle the previous version of submount permission checking.
+
+cifs is modified to pass the mountpoint all of the way down to vfs_submount.
+
+debugfs is modified to pass the mountpoint all of the way down to
+trace_automount by adding a new parameter.  To make this change easier
+a new typedef debugfs_automount_t is introduced to capture the type of
+the debugfs automount function.
+
+Cc: stable@vger.kernel.org
+Fixes: 069d5ac9ae0d ("autofs:  Fix automounts by using current_real_cred()->uid")
+Fixes: aeaa4a79ff6a ("fs: Call d_automount with the filesystems creds")
+Reviewed-by: Trond Myklebust <trond.myklebust@primarydata.com>
+Reviewed-by: Seth Forshee <seth.forshee@canonical.com>
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+---
+ fs/cifs/cifs_dfs_ref.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/fs/cifs/cifs_dfs_ref.c b/fs/cifs/cifs_dfs_ref.c
+index ec9dbbcca3b9..9156be545b0f 100644
+--- a/fs/cifs/cifs_dfs_ref.c
++++ b/fs/cifs/cifs_dfs_ref.c
+@@ -245,7 +245,8 @@ char *cifs_compose_mount_options(const char *sb_mountdata,
+  * @fullpath:		full path in UNC format
+  * @ref:		server's referral
+  */
+-static struct vfsmount *cifs_dfs_do_refmount(struct cifs_sb_info *cifs_sb,
++static struct vfsmount *cifs_dfs_do_refmount(struct dentry *mntpt,
++		struct cifs_sb_info *cifs_sb,
+ 		const char *fullpath, const struct dfs_info3_param *ref)
+ {
+ 	struct vfsmount *mnt;
+@@ -259,7 +260,7 @@ static struct vfsmount *cifs_dfs_do_refmount(struct cifs_sb_info *cifs_sb,
+ 	if (IS_ERR(mountdata))
+ 		return (struct vfsmount *)mountdata;
+ 
+-	mnt = vfs_kern_mount(&cifs_fs_type, 0, devname, mountdata);
++	mnt = vfs_submount(mntpt, &cifs_fs_type, devname, mountdata);
+ 	kfree(mountdata);
+ 	kfree(devname);
+ 	return mnt;
+@@ -334,7 +335,7 @@ static struct vfsmount *cifs_dfs_do_automount(struct dentry *mntpt)
+ 			mnt = ERR_PTR(-EINVAL);
+ 			break;
+ 		}
+-		mnt = cifs_dfs_do_refmount(cifs_sb,
++		mnt = cifs_dfs_do_refmount(mntpt, cifs_sb,
+ 				full_path, referrals + i);
+ 		cifs_dbg(FYI, "%s: cifs_dfs_do_refmount:%s , mnt:%p\n",
+ 			 __func__, referrals[i].node_name, mnt);
+-- 
+2.14.1
+

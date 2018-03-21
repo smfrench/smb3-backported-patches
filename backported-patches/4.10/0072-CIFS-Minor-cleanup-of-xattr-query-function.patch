@@ -1,0 +1,104 @@
+From 67b4c889cc835a2a6e2ff4e20544a33e37e2875d Mon Sep 17 00:00:00 2001
+From: Steve French <smfrench@gmail.com>
+Date: Fri, 12 May 2017 20:59:10 -0500
+Subject: [PATCH 072/204] [CIFS] Minor cleanup of xattr query function
+
+Some minor cleanup of cifs query xattr functions (will also make
+SMB3 xattr implementation cleaner as well).
+
+Signed-off-by: Steve French <steve.french@primarydata.com>
+---
+ fs/cifs/cifsglob.h  | 2 +-
+ fs/cifs/cifsproto.h | 3 +--
+ fs/cifs/cifssmb.c   | 4 +++-
+ fs/cifs/inode.c     | 3 +--
+ fs/cifs/xattr.c     | 6 ++----
+ 5 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index 8be55be70faf..bcc7d9acad64 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -418,7 +418,7 @@ struct smb_version_operations {
+ 	int (*validate_negotiate)(const unsigned int, struct cifs_tcon *);
+ 	ssize_t (*query_all_EAs)(const unsigned int, struct cifs_tcon *,
+ 			const unsigned char *, const unsigned char *, char *,
+-			size_t, const struct nls_table *, int);
++			size_t, struct cifs_sb_info *);
+ 	int (*set_EA)(const unsigned int, struct cifs_tcon *, const char *,
+ 			const char *, const void *, const __u16,
+ 			const struct nls_table *, int);
+diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
+index e49958c3f8bb..6eb3147132e3 100644
+--- a/fs/cifs/cifsproto.h
++++ b/fs/cifs/cifsproto.h
+@@ -480,8 +480,7 @@ extern int CIFSSMBCopy(unsigned int xid,
+ extern ssize_t CIFSSMBQAllEAs(const unsigned int xid, struct cifs_tcon *tcon,
+ 			const unsigned char *searchName,
+ 			const unsigned char *ea_name, char *EAData,
+-			size_t bufsize, const struct nls_table *nls_codepage,
+-			int remap_special_chars);
++			size_t bufsize, struct cifs_sb_info *cifs_sb);
+ extern int CIFSSMBSetEA(const unsigned int xid, struct cifs_tcon *tcon,
+ 		const char *fileName, const char *ea_name,
+ 		const void *ea_value, const __u16 ea_value_len,
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 4de3186d8a71..fbb0d4cbda41 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -6069,11 +6069,13 @@ ssize_t
+ CIFSSMBQAllEAs(const unsigned int xid, struct cifs_tcon *tcon,
+ 		const unsigned char *searchName, const unsigned char *ea_name,
+ 		char *EAData, size_t buf_size,
+-		const struct nls_table *nls_codepage, int remap)
++		struct cifs_sb_info *cifs_sb)
+ {
+ 		/* BB assumes one setup word */
+ 	TRANSACTION2_QPI_REQ *pSMB = NULL;
+ 	TRANSACTION2_QPI_RSP *pSMBr = NULL;
++	int remap = cifs_remap(cifs_sb);
++	struct nls_table *nls_codepage = cifs_sb->local_nls;
+ 	int rc = 0;
+ 	int bytes_returned;
+ 	int list_len;
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index c3b2fa0b2ec8..4d1fcd76d022 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -563,8 +563,7 @@ static int cifs_sfu_mode(struct cifs_fattr *fattr, const unsigned char *path,
+ 
+ 	rc = tcon->ses->server->ops->query_all_EAs(xid, tcon, path,
+ 			"SETFILEBITS", ea_value, 4 /* size of buf */,
+-			cifs_sb->local_nls,
+-			cifs_remap(cifs_sb));
++			cifs_sb);
+ 	cifs_put_tlink(tlink);
+ 	if (rc < 0)
+ 		return (int)rc;
+diff --git a/fs/cifs/xattr.c b/fs/cifs/xattr.c
+index 20af5187ba63..3cb5c9e2d4e7 100644
+--- a/fs/cifs/xattr.c
++++ b/fs/cifs/xattr.c
+@@ -235,8 +235,7 @@ static int cifs_xattr_get(const struct xattr_handler *handler,
+ 
+ 		if (pTcon->ses->server->ops->query_all_EAs)
+ 			rc = pTcon->ses->server->ops->query_all_EAs(xid, pTcon,
+-				full_path, name, value, size,
+-				cifs_sb->local_nls, cifs_remap(cifs_sb));
++				full_path, name, value, size, cifs_sb);
+ 		break;
+ 
+ 	case XATTR_CIFS_ACL: {
+@@ -336,8 +335,7 @@ ssize_t cifs_listxattr(struct dentry *direntry, char *data, size_t buf_size)
+ 
+ 	if (pTcon->ses->server->ops->query_all_EAs)
+ 		rc = pTcon->ses->server->ops->query_all_EAs(xid, pTcon,
+-				full_path, NULL, data, buf_size,
+-				cifs_sb->local_nls, cifs_remap(cifs_sb));
++				full_path, NULL, data, buf_size, cifs_sb);
+ list_ea_exit:
+ 	kfree(full_path);
+ 	free_xid(xid);
+-- 
+2.14.1
+

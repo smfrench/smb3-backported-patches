@@ -1,0 +1,164 @@
+From fb2036d817584df42504910fe104f68517e8990e Mon Sep 17 00:00:00 2001
+From: Pavel Shilovsky <pshilov@microsoft.com>
+Date: Wed, 23 Nov 2016 15:08:14 -0800
+Subject: [PATCH 008/204] CIFS: Make send_cancel take rqst as argument
+
+Signed-off-by: Pavel Shilovsky <pshilov@microsoft.com>
+---
+ fs/cifs/cifsglob.h  |  2 +-
+ fs/cifs/smb1ops.c   |  4 ++--
+ fs/cifs/transport.c | 33 +++++++++++++++++++--------------
+ 3 files changed, 22 insertions(+), 17 deletions(-)
+
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index 7ea8a3393936..6d5fc87ba335 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -208,7 +208,7 @@ struct cifsInodeInfo;
+ struct cifs_open_parms;
+ 
+ struct smb_version_operations {
+-	int (*send_cancel)(struct TCP_Server_Info *, void *,
++	int (*send_cancel)(struct TCP_Server_Info *, struct smb_rqst *,
+ 			   struct mid_q_entry *);
+ 	bool (*compare_fids)(struct cifsFileInfo *, struct cifsFileInfo *);
+ 	/* setup request: allocate mid, sign message */
+diff --git a/fs/cifs/smb1ops.c b/fs/cifs/smb1ops.c
+index fc537c29044e..67a987e4d026 100644
+--- a/fs/cifs/smb1ops.c
++++ b/fs/cifs/smb1ops.c
+@@ -36,11 +36,11 @@
+  * SMB_COM_NT_CANCEL request and then sends it.
+  */
+ static int
+-send_nt_cancel(struct TCP_Server_Info *server, void *buf,
++send_nt_cancel(struct TCP_Server_Info *server, struct smb_rqst *rqst,
+ 	       struct mid_q_entry *mid)
+ {
+ 	int rc = 0;
+-	struct smb_hdr *in_buf = (struct smb_hdr *)buf;
++	struct smb_hdr *in_buf = (struct smb_hdr *)rqst->rq_iov[0].iov_base;
+ 
+ 	/* -4 for RFC1001 length and +2 for BCC field */
+ 	in_buf->smb_buf_length = cpu_to_be32(sizeof(struct smb_hdr) - 4  + 2);
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 40150fe0c16a..878f0dceeb13 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -596,10 +596,11 @@ cifs_sync_mid_result(struct mid_q_entry *mid, struct TCP_Server_Info *server)
+ }
+ 
+ static inline int
+-send_cancel(struct TCP_Server_Info *server, void *buf, struct mid_q_entry *mid)
++send_cancel(struct TCP_Server_Info *server, struct smb_rqst *rqst,
++	    struct mid_q_entry *mid)
+ {
+ 	return server->ops->send_cancel ?
+-				server->ops->send_cancel(server, buf, mid) : 0;
++				server->ops->send_cancel(server, rqst, mid) : 0;
+ }
+ 
+ int
+@@ -719,7 +720,7 @@ SendReceive2(const unsigned int xid, struct cifs_ses *ses,
+ 
+ 	rc = wait_for_response(ses->server, midQ);
+ 	if (rc != 0) {
+-		send_cancel(ses->server, buf, midQ);
++		send_cancel(ses->server, &rqst, midQ);
+ 		spin_lock(&GlobalMid_Lock);
+ 		if (midQ->mid_state == MID_REQUEST_SUBMITTED) {
+ 			midQ->callback = DeleteMidQEntry;
+@@ -772,6 +773,9 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
+ {
+ 	int rc = 0;
+ 	struct mid_q_entry *midQ;
++	unsigned int len = be32_to_cpu(in_buf->smb_buf_length);
++	struct kvec iov = { .iov_base = in_buf, .iov_len = len };
++	struct smb_rqst rqst = { .rq_iov = &iov, .rq_nvec = 1 };
+ 
+ 	if (ses == NULL) {
+ 		cifs_dbg(VFS, "Null smb session\n");
+@@ -789,10 +793,9 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
+ 	   to the same server. We may make this configurable later or
+ 	   use ses->maxReq */
+ 
+-	if (be32_to_cpu(in_buf->smb_buf_length) > CIFSMaxBufSize +
+-			MAX_CIFS_HDR_SIZE - 4) {
++	if (len > CIFSMaxBufSize + MAX_CIFS_HDR_SIZE - 4) {
+ 		cifs_dbg(VFS, "Illegal length, greater than maximum frame, %d\n",
+-			 be32_to_cpu(in_buf->smb_buf_length));
++			 len);
+ 		return -EIO;
+ 	}
+ 
+@@ -823,7 +826,7 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
+ 	midQ->mid_state = MID_REQUEST_SUBMITTED;
+ 
+ 	cifs_in_send_inc(ses->server);
+-	rc = smb_send(ses->server, in_buf, be32_to_cpu(in_buf->smb_buf_length));
++	rc = smb_send(ses->server, in_buf, len);
+ 	cifs_in_send_dec(ses->server);
+ 	cifs_save_when_sent(midQ);
+ 
+@@ -840,7 +843,7 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
+ 
+ 	rc = wait_for_response(ses->server, midQ);
+ 	if (rc != 0) {
+-		send_cancel(ses->server, in_buf, midQ);
++		send_cancel(ses->server, &rqst, midQ);
+ 		spin_lock(&GlobalMid_Lock);
+ 		if (midQ->mid_state == MID_REQUEST_SUBMITTED) {
+ 			/* no longer considered to be "in-flight" */
+@@ -909,6 +912,9 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
+ 	int rstart = 0;
+ 	struct mid_q_entry *midQ;
+ 	struct cifs_ses *ses;
++	unsigned int len = be32_to_cpu(in_buf->smb_buf_length);
++	struct kvec iov = { .iov_base = in_buf, .iov_len = len };
++	struct smb_rqst rqst = { .rq_iov = &iov, .rq_nvec = 1 };
+ 
+ 	if (tcon == NULL || tcon->ses == NULL) {
+ 		cifs_dbg(VFS, "Null smb session\n");
+@@ -928,10 +934,9 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
+ 	   to the same server. We may make this configurable later or
+ 	   use ses->maxReq */
+ 
+-	if (be32_to_cpu(in_buf->smb_buf_length) > CIFSMaxBufSize +
+-			MAX_CIFS_HDR_SIZE - 4) {
++	if (len > CIFSMaxBufSize + MAX_CIFS_HDR_SIZE - 4) {
+ 		cifs_dbg(VFS, "Illegal length, greater than maximum frame, %d\n",
+-			 be32_to_cpu(in_buf->smb_buf_length));
++			 len);
+ 		return -EIO;
+ 	}
+ 
+@@ -960,7 +965,7 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
+ 
+ 	midQ->mid_state = MID_REQUEST_SUBMITTED;
+ 	cifs_in_send_inc(ses->server);
+-	rc = smb_send(ses->server, in_buf, be32_to_cpu(in_buf->smb_buf_length));
++	rc = smb_send(ses->server, in_buf, len);
+ 	cifs_in_send_dec(ses->server);
+ 	cifs_save_when_sent(midQ);
+ 
+@@ -989,7 +994,7 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
+ 		if (in_buf->Command == SMB_COM_TRANSACTION2) {
+ 			/* POSIX lock. We send a NT_CANCEL SMB to cause the
+ 			   blocking lock to return. */
+-			rc = send_cancel(ses->server, in_buf, midQ);
++			rc = send_cancel(ses->server, &rqst, midQ);
+ 			if (rc) {
+ 				cifs_delete_mid(midQ);
+ 				return rc;
+@@ -1010,7 +1015,7 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
+ 
+ 		rc = wait_for_response(ses->server, midQ);
+ 		if (rc) {
+-			send_cancel(ses->server, in_buf, midQ);
++			send_cancel(ses->server, &rqst, midQ);
+ 			spin_lock(&GlobalMid_Lock);
+ 			if (midQ->mid_state == MID_REQUEST_SUBMITTED) {
+ 				/* no longer considered to be "in-flight" */
+-- 
+2.14.1
+

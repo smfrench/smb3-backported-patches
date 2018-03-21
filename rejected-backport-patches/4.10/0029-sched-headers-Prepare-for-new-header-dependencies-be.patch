@@ -1,0 +1,40 @@
+From 3f07c0144132e4f59d88055ac8ff3e691a5fa2b8 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@kernel.org>
+Date: Wed, 8 Feb 2017 18:51:30 +0100
+Subject: [PATCH 029/204] sched/headers: Prepare for new header dependencies
+ before moving code to <linux/sched/signal.h>
+
+We are going to split <linux/sched/signal.h> out of <linux/sched.h>, which
+will have to be picked up from other headers and a couple of .c files.
+
+Create a trivial placeholder <linux/sched/signal.h> file that just
+maps to <linux/sched.h> to make this patch obviously correct and
+bisectable.
+
+Include the new header in the files that are going to need it.
+
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ fs/cifs/connect.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 777ad9f4fc3c..9bf25be05636 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -21,6 +21,7 @@
+ #include <linux/fs.h>
+ #include <linux/net.h>
+ #include <linux/string.h>
++#include <linux/sched/signal.h>
+ #include <linux/list.h>
+ #include <linux/wait.h>
+ #include <linux/slab.h>
+-- 
+2.14.1
+
