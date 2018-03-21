@@ -1,0 +1,39 @@
+From c6fc663e90e56fdcaa3ad62801cfa99f287b8bfc Mon Sep 17 00:00:00 2001
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Wed, 30 Nov 2016 23:40:32 +0100
+Subject: [PATCH 010/218] cifs: use %16phN for formatting md5 sum
+
+Passing a gazillion arguments takes a lot of code:
+
+add/remove: 0/0 grow/shrink: 0/2 up/down: 0/-253 (-253)
+
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/link.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/fs/cifs/link.c b/fs/cifs/link.c
+index d031af8d3d4d..c4d996f78e1c 100644
+--- a/fs/cifs/link.c
++++ b/fs/cifs/link.c
+@@ -45,13 +45,8 @@
+ 	(CIFS_MF_SYMLINK_LINK_OFFSET + CIFS_MF_SYMLINK_LINK_MAXLEN)
+ 
+ #define CIFS_MF_SYMLINK_LEN_FORMAT "XSym\n%04u\n"
+-#define CIFS_MF_SYMLINK_MD5_FORMAT \
+-	"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n"
+-#define CIFS_MF_SYMLINK_MD5_ARGS(md5_hash) \
+-	md5_hash[0],  md5_hash[1],  md5_hash[2],  md5_hash[3], \
+-	md5_hash[4],  md5_hash[5],  md5_hash[6],  md5_hash[7], \
+-	md5_hash[8],  md5_hash[9],  md5_hash[10], md5_hash[11],\
+-	md5_hash[12], md5_hash[13], md5_hash[14], md5_hash[15]
++#define CIFS_MF_SYMLINK_MD5_FORMAT "%16phN\n"
++#define CIFS_MF_SYMLINK_MD5_ARGS(md5_hash) md5_hash
+ 
+ static int
+ symlink_hash(unsigned int link_len, const char *link_str, u8 *md5_hash)
+-- 
+2.14.1
+

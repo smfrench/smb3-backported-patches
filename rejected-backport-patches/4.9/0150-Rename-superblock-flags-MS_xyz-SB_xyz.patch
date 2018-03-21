@@ -1,0 +1,190 @@
+From 1751e8a6cb935e555fcdbcb9ab4f0446e322ca3e Mon Sep 17 00:00:00 2001
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 27 Nov 2017 13:05:09 -0800
+Subject: [PATCH 150/218] Rename superblock flags (MS_xyz -> SB_xyz)
+
+This is a pure automated search-and-replace of the internal kernel
+superblock flags.
+
+The s_flags are now called SB_*, with the names and the values for the
+moment mirroring the MS_* flags that they're equivalent to.
+
+Note how the MS_xyz flags are the ones passed to the mount system call,
+while the SB_xyz flags are what we then use in sb->s_flags.
+
+The script to do this was:
+
+    # places to look in; re security/*: it generally should *not* be
+    # touched (that stuff parses mount(2) arguments directly), but
+    # there are two places where we really deal with superblock flags.
+    FILES="drivers/mtd drivers/staging/lustre fs ipc mm \
+            include/linux/fs.h include/uapi/linux/bfs_fs.h \
+            security/apparmor/apparmorfs.c security/apparmor/include/lib.h"
+    # the list of MS_... constants
+    SYMS="RDONLY NOSUID NODEV NOEXEC SYNCHRONOUS REMOUNT MANDLOCK \
+          DIRSYNC NOATIME NODIRATIME BIND MOVE REC VERBOSE SILENT \
+          POSIXACL UNBINDABLE PRIVATE SLAVE SHARED RELATIME KERNMOUNT \
+          I_VERSION STRICTATIME LAZYTIME SUBMOUNT NOREMOTELOCK NOSEC BORN \
+          ACTIVE NOUSER"
+
+    SED_PROG=
+    for i in $SYMS; do SED_PROG="$SED_PROG -e s/MS_$i/SB_$i/g"; done
+
+    # we want files that contain at least one of MS_...,
+    # with fs/namespace.c and fs/pnode.c excluded.
+    L=$(for i in $SYMS; do git grep -w -l MS_$i $FILES; done| sort|uniq|grep -v '^fs/namespace.c'|grep -v '^fs/pnode.c')
+
+    for f in $L; do sed -i $f $SED_PROG; done
+
+Requested-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ fs/cifs/cifs_fs_sb.h |  2 +-
+ fs/cifs/cifsfs.c     | 12 ++++++------
+ fs/cifs/cifsglob.h   |  4 ++--
+ fs/cifs/inode.c      |  2 +-
+ fs/cifs/xattr.c      |  8 ++++----
+ 5 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/fs/cifs/cifs_fs_sb.h b/fs/cifs/cifs_fs_sb.h
+index cbd216b57239..350fa55a1bf7 100644
+--- a/fs/cifs/cifs_fs_sb.h
++++ b/fs/cifs/cifs_fs_sb.h
+@@ -42,7 +42,7 @@
+ #define CIFS_MOUNT_MULTIUSER	0x20000 /* multiuser mount */
+ #define CIFS_MOUNT_STRICT_IO	0x40000 /* strict cache mode */
+ #define CIFS_MOUNT_RWPIDFORWARD	0x80000 /* use pid forwarding for rw */
+-#define CIFS_MOUNT_POSIXACL	0x100000 /* mirror of MS_POSIXACL in mnt_cifs_flags */
++#define CIFS_MOUNT_POSIXACL	0x100000 /* mirror of SB_POSIXACL in mnt_cifs_flags */
+ #define CIFS_MOUNT_CIFS_BACKUPUID 0x200000 /* backup intent bit for a user */
+ #define CIFS_MOUNT_CIFS_BACKUPGID 0x400000 /* backup intent bit for a group */
+ #define CIFS_MOUNT_MAP_SFM_CHR	0x800000 /* SFM/MAC mapping for illegal chars */
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index 8c8b75d33f31..31b7565b1617 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -125,7 +125,7 @@ cifs_read_super(struct super_block *sb)
+ 	tcon = cifs_sb_master_tcon(cifs_sb);
+ 
+ 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_POSIXACL)
+-		sb->s_flags |= MS_POSIXACL;
++		sb->s_flags |= SB_POSIXACL;
+ 
+ 	if (tcon->ses->capabilities & tcon->ses->server->vals->cap_large_files)
+ 		sb->s_maxbytes = MAX_LFS_FILESIZE;
+@@ -497,7 +497,7 @@ cifs_show_options(struct seq_file *s, struct dentry *root)
+ 		seq_puts(s, ",cifsacl");
+ 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_DYNPERM)
+ 		seq_puts(s, ",dynperm");
+-	if (root->d_sb->s_flags & MS_POSIXACL)
++	if (root->d_sb->s_flags & SB_POSIXACL)
+ 		seq_puts(s, ",acl");
+ 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_MF_SYMLINKS)
+ 		seq_puts(s, ",mfsymlinks");
+@@ -573,7 +573,7 @@ static int cifs_show_stats(struct seq_file *s, struct dentry *root)
+ static int cifs_remount(struct super_block *sb, int *flags, char *data)
+ {
+ 	sync_filesystem(sb);
+-	*flags |= MS_NODIRATIME;
++	*flags |= SB_NODIRATIME;
+ 	return 0;
+ }
+ 
+@@ -708,7 +708,7 @@ cifs_do_mount(struct file_system_type *fs_type,
+ 
+ 	rc = cifs_mount(cifs_sb, volume_info);
+ 	if (rc) {
+-		if (!(flags & MS_SILENT))
++		if (!(flags & SB_SILENT))
+ 			cifs_dbg(VFS, "cifs_mount failed w/return code = %d\n",
+ 				 rc);
+ 		root = ERR_PTR(rc);
+@@ -720,7 +720,7 @@ cifs_do_mount(struct file_system_type *fs_type,
+ 	mnt_data.flags = flags;
+ 
+ 	/* BB should we make this contingent on mount parm? */
+-	flags |= MS_NODIRATIME | MS_NOATIME;
++	flags |= SB_NODIRATIME | SB_NOATIME;
+ 
+ 	sb = sget(fs_type, cifs_match_super, cifs_set_super, flags, &mnt_data);
+ 	if (IS_ERR(sb)) {
+@@ -739,7 +739,7 @@ cifs_do_mount(struct file_system_type *fs_type,
+ 			goto out_super;
+ 		}
+ 
+-		sb->s_flags |= MS_ACTIVE;
++		sb->s_flags |= SB_ACTIVE;
+ 	}
+ 
+ 	root = cifs_get_root(volume_info, sb);
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index e185b2853eab..b16583594d1a 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -559,8 +559,8 @@ struct smb_vol {
+ 			 CIFS_MOUNT_MULTIUSER | CIFS_MOUNT_STRICT_IO | \
+ 			 CIFS_MOUNT_CIFS_BACKUPUID | CIFS_MOUNT_CIFS_BACKUPGID)
+ 
+-#define CIFS_MS_MASK (MS_RDONLY | MS_MANDLOCK | MS_NOEXEC | MS_NOSUID | \
+-		      MS_NODEV | MS_SYNCHRONOUS)
++#define CIFS_MS_MASK (SB_RDONLY | SB_MANDLOCK | SB_NOEXEC | SB_NOSUID | \
++		      SB_NODEV | SB_SYNCHRONOUS)
+ 
+ struct cifs_mnt_data {
+ 	struct cifs_sb_info *cifs_sb;
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 7c732cb44164..ecb99079363a 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -985,7 +985,7 @@ cifs_iget(struct super_block *sb, struct cifs_fattr *fattr)
+ 		}
+ 
+ 		cifs_fattr_to_inode(inode, fattr);
+-		if (sb->s_flags & MS_NOATIME)
++		if (sb->s_flags & SB_NOATIME)
+ 			inode->i_flags |= S_NOATIME | S_NOCMTIME;
+ 		if (inode->i_state & I_NEW) {
+ 			inode->i_ino = hash;
+diff --git a/fs/cifs/xattr.c b/fs/cifs/xattr.c
+index 52f975d848a0..316af84674f1 100644
+--- a/fs/cifs/xattr.c
++++ b/fs/cifs/xattr.c
+@@ -117,7 +117,7 @@ static int cifs_xattr_set(const struct xattr_handler *handler,
+ #ifdef CONFIG_CIFS_POSIX
+ 		if (!value)
+ 			goto out;
+-		if (sb->s_flags & MS_POSIXACL)
++		if (sb->s_flags & SB_POSIXACL)
+ 			rc = CIFSSMBSetPosixACL(xid, pTcon, full_path,
+ 				value, (const int)size,
+ 				ACL_TYPE_ACCESS, cifs_sb->local_nls,
+@@ -129,7 +129,7 @@ static int cifs_xattr_set(const struct xattr_handler *handler,
+ #ifdef CONFIG_CIFS_POSIX
+ 		if (!value)
+ 			goto out;
+-		if (sb->s_flags & MS_POSIXACL)
++		if (sb->s_flags & SB_POSIXACL)
+ 			rc = CIFSSMBSetPosixACL(xid, pTcon, full_path,
+ 				value, (const int)size,
+ 				ACL_TYPE_DEFAULT, cifs_sb->local_nls,
+@@ -266,7 +266,7 @@ static int cifs_xattr_get(const struct xattr_handler *handler,
+ 
+ 	case XATTR_ACL_ACCESS:
+ #ifdef CONFIG_CIFS_POSIX
+-		if (sb->s_flags & MS_POSIXACL)
++		if (sb->s_flags & SB_POSIXACL)
+ 			rc = CIFSSMBGetPosixACL(xid, pTcon, full_path,
+ 				value, size, ACL_TYPE_ACCESS,
+ 				cifs_sb->local_nls,
+@@ -276,7 +276,7 @@ static int cifs_xattr_get(const struct xattr_handler *handler,
+ 
+ 	case XATTR_ACL_DEFAULT:
+ #ifdef CONFIG_CIFS_POSIX
+-		if (sb->s_flags & MS_POSIXACL)
++		if (sb->s_flags & SB_POSIXACL)
+ 			rc = CIFSSMBGetPosixACL(xid, pTcon, full_path,
+ 				value, size, ACL_TYPE_DEFAULT,
+ 				cifs_sb->local_nls,
+-- 
+2.14.1
+

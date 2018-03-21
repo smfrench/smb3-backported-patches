@@ -1,0 +1,78 @@
+From 7c0f6ba682b9c7632072ffbedf8d328c8f3c42ba Mon Sep 17 00:00:00 2001
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 24 Dec 2016 11:46:01 -0800
+Subject: [PATCH 013/218] Replace <asm/uaccess.h> with <linux/uaccess.h>
+ globally
+
+This was entirely automated, using the script by Al:
+
+  PATT='^[[:blank:]]*#[[:blank:]]*include[[:blank:]]*<asm/uaccess.h>'
+  sed -i -e "s!$PATT!#include <linux/uaccess.h>!" \
+        $(git grep -l "$PATT"|grep -v ^include/linux/uaccess.h)
+
+to do the replacement at the end of the merge window.
+
+Requested-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ fs/cifs/cifs_debug.c | 2 +-
+ fs/cifs/cifssmb.c    | 2 +-
+ fs/cifs/connect.c    | 2 +-
+ fs/cifs/transport.c  | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
+index 3d03e48a9213..9727e1dcacd5 100644
+--- a/fs/cifs/cifs_debug.c
++++ b/fs/cifs/cifs_debug.c
+@@ -24,7 +24,7 @@
+ #include <linux/ctype.h>
+ #include <linux/module.h>
+ #include <linux/proc_fs.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include "cifspdu.h"
+ #include "cifsglob.h"
+ #include "cifsproto.h"
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index e3fed9249a04..b47261858e6d 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -35,7 +35,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/swap.h>
+ #include <linux/task_io_accounting_ops.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include "cifspdu.h"
+ #include "cifsglob.h"
+ #include "cifsacl.h"
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index b822bf364c2b..35ae49ed1f76 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -34,7 +34,7 @@
+ #include <linux/pagevec.h>
+ #include <linux/freezer.h>
+ #include <linux/namei.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include <asm/processor.h>
+ #include <linux/inet.h>
+ #include <linux/module.h>
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 5f02edc819af..fbb84c08e3cd 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -30,7 +30,7 @@
+ #include <linux/tcp.h>
+ #include <linux/bvec.h>
+ #include <linux/highmem.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include <asm/processor.h>
+ #include <linux/mempool.h>
+ #include "cifspdu.h"
+-- 
+2.14.1
+

@@ -1,0 +1,31 @@
+From 8a7b0d8e8d9962ec3b2ae64dd4e86d68a6fb9220 Mon Sep 17 00:00:00 2001
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 5 May 2017 08:30:40 +0300
+Subject: [PATCH 089/218] CIFS: Set ->should_dirty in cifs_user_readv()
+
+The current code causes a static checker warning because ITER_IOVEC is
+zero so the condition is never true.
+
+Fixes: 6685c5e2d1ac ("CIFS: Add asynchronous read support through kernel AIO")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index 0fd081bd2a2f..fcef70602b27 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -3271,7 +3271,7 @@ ssize_t cifs_user_readv(struct kiocb *iocb, struct iov_iter *to)
+ 	if (!is_sync_kiocb(iocb))
+ 		ctx->iocb = iocb;
+ 
+-	if (to->type & ITER_IOVEC)
++	if (to->type == ITER_IOVEC)
+ 		ctx->should_dirty = true;
+ 
+ 	rc = setup_aio_ctx_iter(ctx, to, READ);
+-- 
+2.14.1
+

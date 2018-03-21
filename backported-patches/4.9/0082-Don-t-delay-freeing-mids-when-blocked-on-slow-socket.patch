@@ -1,0 +1,128 @@
+From de1892b887eeb85ce458a93979c2108e6f329618 Mon Sep 17 00:00:00 2001
+From: Steve French <smfrench@gmail.com>
+Date: Thu, 4 May 2017 07:54:04 -0500
+Subject: [PATCH 082/218] Don't delay freeing mids when blocked on slow socket
+ write of request
+
+When processing responses, and in particular freeing mids (DeleteMidQEntry),
+which is very important since it also frees the associated buffers (cifs_buf_release),
+we can block a long time if (writes to) socket is slow due to low memory or networking
+issues.
+
+We can block in send (smb request) waiting for memory, and be blocked in processing
+responess (which could free memory if we let it) - since they both grab the
+server->srv_mutex.
+
+In practice, in the DeleteMidQEntry case - there is no reason we need to
+grab the srv_mutex so remove these around DeleteMidQEntry, and it allows
+us to free memory faster.
+
+Signed-off-by: Steve French <steve.french@primarydata.com>
+Acked-by: Pavel Shilovsky <pshilov@microsoft.com>
+---
+ fs/cifs/cifssmb.c   | 7 -------
+ fs/cifs/smb2pdu.c   | 7 -------
+ fs/cifs/transport.c | 2 --
+ 3 files changed, 16 deletions(-)
+
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 4c01b3f9abf0..4de3186d8a71 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -697,9 +697,7 @@ cifs_echo_callback(struct mid_q_entry *mid)
+ {
+ 	struct TCP_Server_Info *server = mid->callback_data;
+ 
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(server, 1, CIFS_ECHO_OP);
+ }
+ 
+@@ -1599,9 +1597,7 @@ cifs_readv_callback(struct mid_q_entry *mid)
+ 	}
+ 
+ 	queue_work(cifsiod_wq, &rdata->work);
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(server, 1, 0);
+ }
+ 
+@@ -2058,7 +2054,6 @@ cifs_writev_callback(struct mid_q_entry *mid)
+ {
+ 	struct cifs_writedata *wdata = mid->callback_data;
+ 	struct cifs_tcon *tcon = tlink_tcon(wdata->cfile->tlink);
+-	struct TCP_Server_Info *server = tcon->ses->server;
+ 	unsigned int written;
+ 	WRITE_RSP *smb = (WRITE_RSP *)mid->resp_buf;
+ 
+@@ -2095,9 +2090,7 @@ cifs_writev_callback(struct mid_q_entry *mid)
+ 	}
+ 
+ 	queue_work(cifsiod_wq, &wdata->work);
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(tcon->ses->server, 1, 0);
+ }
+ 
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index 48ff7703b919..e0517f499c38 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -2173,9 +2173,7 @@ smb2_echo_callback(struct mid_q_entry *mid)
+ 	if (mid->mid_state == MID_RESPONSE_RECEIVED)
+ 		credits_received = le16_to_cpu(rsp->hdr.sync_hdr.CreditRequest);
+ 
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(server, credits_received, CIFS_ECHO_OP);
+ }
+ 
+@@ -2433,9 +2431,7 @@ smb2_readv_callback(struct mid_q_entry *mid)
+ 		cifs_stats_fail_inc(tcon, SMB2_READ_HE);
+ 
+ 	queue_work(cifsiod_wq, &rdata->work);
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(server, credits_received, 0);
+ }
+ 
+@@ -2594,7 +2590,6 @@ smb2_writev_callback(struct mid_q_entry *mid)
+ {
+ 	struct cifs_writedata *wdata = mid->callback_data;
+ 	struct cifs_tcon *tcon = tlink_tcon(wdata->cfile->tlink);
+-	struct TCP_Server_Info *server = tcon->ses->server;
+ 	unsigned int written;
+ 	struct smb2_write_rsp *rsp = (struct smb2_write_rsp *)mid->resp_buf;
+ 	unsigned int credits_received = 1;
+@@ -2634,9 +2629,7 @@ smb2_writev_callback(struct mid_q_entry *mid)
+ 		cifs_stats_fail_inc(tcon, SMB2_WRITE_HE);
+ 
+ 	queue_work(cifsiod_wq, &wdata->work);
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	add_credits(tcon->ses->server, credits_received, 0);
+ }
+ 
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 4d64b5b8fc9c..de589d0d3739 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -613,9 +613,7 @@ cifs_sync_mid_result(struct mid_q_entry *mid, struct TCP_Server_Info *server)
+ 	}
+ 	spin_unlock(&GlobalMid_Lock);
+ 
+-	mutex_lock(&server->srv_mutex);
+ 	DeleteMidQEntry(mid);
+-	mutex_unlock(&server->srv_mutex);
+ 	return rc;
+ }
+ 
+-- 
+2.14.1
+

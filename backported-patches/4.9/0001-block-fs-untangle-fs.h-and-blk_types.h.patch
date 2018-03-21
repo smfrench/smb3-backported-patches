@@ -1,0 +1,41 @@
+From 2f8b544477e627a42e66902e948d87f86554aeca Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 1 Nov 2016 07:40:13 -0600
+Subject: [PATCH 001/218] block,fs: untangle fs.h and blk_types.h
+
+Nothing in fs.h should require blk_types.h to be included.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Jens Axboe <axboe@fb.com>
+---
+ fs/cifs/connect.c   | 1 +
+ fs/cifs/transport.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index aab5227979e2..db726e8311ca 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -41,6 +41,7 @@
+ #include <keys/user-type.h>
+ #include <net/ipv6.h>
+ #include <linux/parser.h>
++#include <linux/bvec.h>
+ 
+ #include "cifspdu.h"
+ #include "cifsglob.h"
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 206a597b2293..5f02edc819af 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -28,6 +28,7 @@
+ #include <linux/delay.h>
+ #include <linux/freezer.h>
+ #include <linux/tcp.h>
++#include <linux/bvec.h>
+ #include <linux/highmem.h>
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+-- 
+2.14.1
+
