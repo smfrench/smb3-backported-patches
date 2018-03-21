@@ -1,0 +1,44 @@
+From 29bb3158cf6a5ad7b3521d1229552f375107a58c Mon Sep 17 00:00:00 2001
+From: Daniel N Pettersson <danielnp@axis.com>
+Date: Thu, 27 Apr 2017 11:32:36 +0200
+Subject: [PATCH 007/157] cifs: fix IPv6 link local, with scope id, address
+ parsing
+
+When the IP address is gotten from the UNC, use only the address part
+of the UNC. Else all after the percent sign in an IPv6 link local
+address is interpreted as a scope id. This includes the slash and
+share name. A scope id is expected to be an integer and any trailing
+characters makes the conversion to integer fail.
+Example of mount command that fails:
+mount -i -t cifs //fe80::6a05:caff:fe3e:8ffc%2/test /mnt/t -o sec=none
+
+Signed-off-by: Daniel N Pettersson <danielnp@axis.com>
+Signed-off-by: Steve French <smfrench@gmail.com>
+---
+ fs/cifs/connect.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 0f2781677ccc..fef6156eb6c8 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1945,9 +1945,14 @@ cifs_parse_mount_options(const char *mountdata, const char *devname,
+ 	}
+ 
+ 	if (!got_ip) {
++		int len;
++		const char *slash;
++
+ 		/* No ip= option specified? Try to get it from UNC */
+-		if (!cifs_convert_address(dstaddr, &vol->UNC[2],
+-						strlen(&vol->UNC[2]))) {
++		/* Use the address part of the UNC. */
++		slash = strchr(&vol->UNC[2], '\\');
++		len = slash - &vol->UNC[2];
++		if (!cifs_convert_address(dstaddr, &vol->UNC[2], len)) {
+ 			pr_err("Unable to determine destination address.\n");
+ 			goto cifs_parse_mount_err;
+ 		}
+-- 
+2.14.1
+

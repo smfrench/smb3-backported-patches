@@ -1,0 +1,65 @@
+From c6e970a04bdceb7ef1fdbac6be3bd4cd0a0a02bd Mon Sep 17 00:00:00 2001
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Tue, 28 Mar 2017 23:45:06 +0200
+Subject: [PATCH 001/157] net: break include loop netdevice.h, dsa.h, devlink.h
+
+There is an include loop between netdevice.h, dsa.h, devlink.h because
+of NETDEV_ALIGN, making it impossible to use devlink structures in
+dsa.h.
+
+Break this loop by taking dsa.h out of netdevice.h, add a forward
+declaration of dsa_switch_tree and netdev_set_default_ethtool_ops()
+function, which is what netdevice.h requires.
+
+No longer having dsa.h in netdevice.h means the includes in dsa.h no
+longer get included. This breaks a few other files which depend on
+these includes. Add these directly in the affected file.
+
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ fs/cifs/cifsfs.c  | 1 +
+ fs/cifs/connect.c | 1 +
+ fs/cifs/smb2pdu.c | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index 15e1db8738ae..8c91f37ac0eb 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -37,6 +37,7 @@
+ #include <linux/freezer.h>
+ #include <linux/namei.h>
+ #include <linux/random.h>
++#include <linux/uuid.h>
+ #include <linux/xattr.h>
+ #include <net/ipv6.h>
+ #include "cifsfs.h"
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 9ae695ae3ed7..858698dcde3c 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -35,6 +35,7 @@
+ #include <linux/pagevec.h>
+ #include <linux/freezer.h>
+ #include <linux/namei.h>
++#include <linux/uuid.h>
+ #include <linux/uaccess.h>
+ #include <asm/processor.h>
+ #include <linux/inet.h>
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index 7446496850a3..fb75fe908225 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -33,6 +33,7 @@
+ #include <linux/vfs.h>
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/uaccess.h>
++#include <linux/uuid.h>
+ #include <linux/pagemap.h>
+ #include <linux/xattr.h>
+ #include "smb2pdu.h"
+-- 
+2.14.1
+

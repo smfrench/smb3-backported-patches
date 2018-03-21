@@ -1,0 +1,51 @@
+From 3b49c9a1e984b524142afc7536041d8c66877113 Mon Sep 17 00:00:00 2001
+From: Jeff Layton <jlayton@redhat.com>
+Date: Fri, 7 Jul 2017 15:20:52 -0400
+Subject: [PATCH 021/127] fs: convert a pile of fsync routines to errseq_t
+ based reporting
+
+This patch converts most of the in-kernel filesystems that do writeback
+out of the pagecache to report errors using the errseq_t-based
+infrastructure that was recently added. This allows them to report
+errors once for each open file description.
+
+Most filesystems have a fairly straightforward fsync operation. They
+call filemap_write_and_wait_range to write back all of the data and
+wait on it, and then (sometimes) sync out the metadata.
+
+For those filesystems this is a straightforward conversion from calling
+filemap_write_and_wait_range in their fsync operation to calling
+file_write_and_wait_range.
+
+Acked-by: Jan Kara <jack@suse.cz>
+Acked-by: Dave Kleikamp <dave.kleikamp@oracle.com>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/cifs/file.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index bc09df6b473a..0786f19d288f 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -2329,7 +2329,7 @@ int cifs_strict_fsync(struct file *file, loff_t start, loff_t end,
+ 	struct inode *inode = file_inode(file);
+ 	struct cifs_sb_info *cifs_sb = CIFS_SB(inode->i_sb);
+ 
+-	rc = filemap_write_and_wait_range(inode->i_mapping, start, end);
++	rc = file_write_and_wait_range(file, start, end);
+ 	if (rc)
+ 		return rc;
+ 	inode_lock(inode);
+@@ -2371,7 +2371,7 @@ int cifs_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+ 	struct cifs_sb_info *cifs_sb = CIFS_FILE_SB(file);
+ 	struct inode *inode = file->f_mapping->host;
+ 
+-	rc = filemap_write_and_wait_range(inode->i_mapping, start, end);
++	rc = file_write_and_wait_range(file, start, end);
+ 	if (rc)
+ 		return rc;
+ 	inode_lock(inode);
+-- 
+2.14.1
+
