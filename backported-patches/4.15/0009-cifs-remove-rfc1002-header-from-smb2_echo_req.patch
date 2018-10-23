@@ -1,7 +1,7 @@
 From 7f7ae759fb6ec6fd4cd3d23ac712d45171f87615 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 9 Nov 2017 12:14:21 +1100
-Subject: [PATCH 09/66] cifs: remove rfc1002 header from smb2_echo_req
+Subject: [PATCH 009/267] cifs: remove rfc1002 header from smb2_echo_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Reviewed-by: Aurelien Aptel <aaptel@suse.com>
@@ -63,5 +63,5 @@ index 2c743d338a11..b22bf8c6753e 100644
  	__u16  Reserved;
  } __packed;
 -- 
-2.14.1
+2.17.1
 

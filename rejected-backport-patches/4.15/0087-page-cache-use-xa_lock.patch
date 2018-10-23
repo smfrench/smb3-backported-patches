@@ -1,0 +1,46 @@
+From b93b016313b3ba8003c3b8bb71f569af91f19fc7 Mon Sep 17 00:00:00 2001
+From: Matthew Wilcox <mawilcox@microsoft.com>
+Date: Tue, 10 Apr 2018 16:36:56 -0700
+Subject: [PATCH 087/267] page cache: use xa_lock
+
+Remove the address_space ->tree_lock and use the xa_lock newly added to
+the radix_tree_root.  Rename the address_space ->page_tree to ->i_pages,
+since we don't really care that it's a tree.
+
+[willy@infradead.org: fix nds32, fs/dax.c]
+  Link: http://lkml.kernel.org/r/20180406145415.GB20605@bombadil.infradead.orgLink: http://lkml.kernel.org/r/20180313132639.17387-9-willy@infradead.org
+Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+Acked-by: Jeff Layton <jlayton@redhat.com>
+Cc: Darrick J. Wong <darrick.wong@oracle.com>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Will Deacon <will.deacon@arm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ fs/cifs/file.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index 7cee97b93a61..4bcd4e838b47 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -1987,11 +1987,10 @@ wdata_prepare_pages(struct cifs_writedata *wdata, unsigned int found_pages,
+ 	for (i = 0; i < found_pages; i++) {
+ 		page = wdata->pages[i];
+ 		/*
+-		 * At this point we hold neither mapping->tree_lock nor
+-		 * lock on the page itself: the page may be truncated or
+-		 * invalidated (changing page->mapping to NULL), or even
+-		 * swizzled back from swapper_space to tmpfs file
+-		 * mapping
++		 * At this point we hold neither the i_pages lock nor the
++		 * page lock: the page may be truncated or invalidated
++		 * (changing page->mapping to NULL), or even swizzled
++		 * back from swapper_space to tmpfs file mapping
+ 		 */
+ 
+ 		if (nr_pages == 0)
+-- 
+2.17.1
+

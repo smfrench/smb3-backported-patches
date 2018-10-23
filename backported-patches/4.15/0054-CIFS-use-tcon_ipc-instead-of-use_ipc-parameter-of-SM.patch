@@ -1,7 +1,7 @@
 From 63a83b861c47dba9e0f46b98423723a6a3d97fb1 Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Wed, 24 Jan 2018 13:46:11 +0100
-Subject: [PATCH 54/66] CIFS: use tcon_ipc instead of use_ipc parameter of
+Subject: [PATCH 054/267] CIFS: use tcon_ipc instead of use_ipc parameter of
  SMB2_ioctl
 
 Since IPC now has a tcon object, the caller can just pass it. This
@@ -14,7 +14,7 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 ---
  fs/cifs/smb2file.c  |  2 +-
- fs/cifs/smb2ops.c   | 53 ++++++++++++++++++++++-------------------------------
+ fs/cifs/smb2ops.c   | 53 +++++++++++++++++++--------------------------
  fs/cifs/smb2pdu.c   |  4 +---
  fs/cifs/smb2proto.h |  3 +--
  4 files changed, 25 insertions(+), 37 deletions(-)
@@ -223,5 +223,5 @@ index e9ab5227e7a8..05287b01f596 100644
  extern int SMB2_close(const unsigned int xid, struct cifs_tcon *tcon,
  		      u64 persistent_file_id, u64 volatile_file_id);
 -- 
-2.14.1
+2.17.1
 

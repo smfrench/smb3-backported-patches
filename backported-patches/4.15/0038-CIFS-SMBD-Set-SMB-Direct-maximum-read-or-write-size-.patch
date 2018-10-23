@@ -1,7 +1,7 @@
 From 09902f8dc849fd9d3f1258a5c926c5d5472646b1 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:39 -0700
-Subject: [PATCH 38/66] CIFS: SMBD: Set SMB Direct maximum read or write size
+Subject: [PATCH 038/267] CIFS: SMBD: Set SMB Direct maximum read or write size
  for I/O
 
 When connecting over SMB Direct, the transport negotiates its maximum I/O sizes
@@ -55,5 +55,5 @@ index ed88ab8a4774..c8fa4c4ccc50 100644
  	if (!(server->capabilities & SMB2_GLOBAL_CAP_LARGE_MTU))
  		rsize = min_t(unsigned int, rsize, SMB2_MAX_BUFFER_SIZE);
 -- 
-2.14.1
+2.17.1
 

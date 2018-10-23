@@ -1,0 +1,39 @@
+From d81243c697ffc71f983736e7da2db31a8be0001f Mon Sep 17 00:00:00 2001
+From: Mark Syms <mark.syms@citrix.com>
+Date: Thu, 24 May 2018 09:47:31 +0100
+Subject: [PATCH 152/267] CIFS: 511c54a2f69195b28afb9dd119f03787b1625bb4 adds a
+ check for session expiry, status STATUS_NETWORK_SESSION_EXPIRED, however the
+ server can also respond with STATUS_USER_SESSION_DELETED in cases where the
+ session has been idle for some time and the server reaps the session to
+ recover resources.
+
+Handle this additional status in the same way as SESSION_EXPIRED.
+
+Signed-off-by: Mark Syms <mark.syms@citrix.com>
+Signed-off-by: Steve French <stfrench@microsoft.com>
+CC: Stable <stable@vger.kernel.org>
+---
+ fs/cifs/smb2ops.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/cifs/smb2ops.c b/fs/cifs/smb2ops.c
+index 20cc67c3a6d0..f2bce73e23a0 100644
+--- a/fs/cifs/smb2ops.c
++++ b/fs/cifs/smb2ops.c
+@@ -1323,10 +1323,11 @@ smb2_is_session_expired(char *buf)
+ {
+ 	struct smb2_sync_hdr *shdr = get_sync_hdr(buf);
+ 
+-	if (shdr->Status != STATUS_NETWORK_SESSION_EXPIRED)
++	if (shdr->Status != STATUS_NETWORK_SESSION_EXPIRED &&
++	    shdr->Status != STATUS_USER_SESSION_DELETED)
+ 		return false;
+ 
+-	cifs_dbg(FYI, "Session expired\n");
++	cifs_dbg(FYI, "Session expired or deleted\n");
+ 	return true;
+ }
+ 
+-- 
+2.17.1
+

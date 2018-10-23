@@ -1,7 +1,7 @@
 From 45305eda6bfb5b90624f8cf525eb88d037eafe02 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 9 Nov 2017 12:14:17 +1100
-Subject: [PATCH 05/66] cifs: remove rfc1002 header from smb2_logoff_req
+Subject: [PATCH 005/267] cifs: remove rfc1002 header from smb2_logoff_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Reviewed-by: Aurelien Aptel <aaptel@suse.com>
@@ -70,5 +70,5 @@ index 0fe2382597ad..0799e0957499 100644
  	__le16 Reserved;
  } __packed;
 -- 
-2.14.1
+2.17.1
 

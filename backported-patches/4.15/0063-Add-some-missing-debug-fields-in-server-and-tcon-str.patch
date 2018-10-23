@@ -1,7 +1,7 @@
 From ede2e520a1484924a55c8fc77a8256f5d33d2ab2 Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Wed, 31 Jan 2018 14:34:37 -0600
-Subject: [PATCH 63/66] Add some missing debug fields in server and tcon
+Subject: [PATCH 063/267] Add some missing debug fields in server and tcon
  structs
 
 Allow dumping out debug information on dialect, signing, unix extensions
@@ -41,5 +41,5 @@ index c7a863219fa3..e35e711db68e 100644
  		list_for_each(tmp2, &server->smb_ses_list) {
  			ses = list_entry(tmp2, struct cifs_ses,
 -- 
-2.14.1
+2.17.1
 

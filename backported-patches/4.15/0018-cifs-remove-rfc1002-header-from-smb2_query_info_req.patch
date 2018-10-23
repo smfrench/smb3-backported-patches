@@ -1,7 +1,7 @@
 From b2fb7fecc9357c307b2ffe7695ea529cd3b15474 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Mon, 20 Nov 2017 11:24:46 +1100
-Subject: [PATCH 18/66] cifs: remove rfc1002 header from smb2_query_info_req
+Subject: [PATCH 018/267] cifs: remove rfc1002 header from smb2_query_info_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -120,5 +120,5 @@ index 0b215bb4c58b..9157d95d0c4e 100644
  	__u8   InfoType;
  	__u8   FileInfoClass;
 -- 
-2.14.1
+2.17.1
 

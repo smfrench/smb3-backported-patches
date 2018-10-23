@@ -1,7 +1,8 @@
 From 2fef137a2e6a2e5a7984f991e6b9546ddd93c6f2 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:41 -0700
-Subject: [PATCH 40/66] CIFS: SMBD: Upper layer receives data via RDMA receive
+Subject: [PATCH 040/267] CIFS: SMBD: Upper layer receives data via RDMA
+ receive
 
 With SMB Direct connected, use it for receiving data via RDMA receive.
 
@@ -31,5 +32,5 @@ index d8bfa89161e2..1677401660d0 100644
  		if (server->tcpStatus == CifsExiting)
  			return -ESHUTDOWN;
 -- 
-2.14.1
+2.17.1
 

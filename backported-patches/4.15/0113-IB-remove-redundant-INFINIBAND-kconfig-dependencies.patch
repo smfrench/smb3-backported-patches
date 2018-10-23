@@ -1,0 +1,31 @@
+From 9533b292a7acc62c294ebcbd9e1f9f9d52adb10b Mon Sep 17 00:00:00 2001
+From: Greg Thelen <gthelen@google.com>
+Date: Thu, 3 May 2018 20:29:19 -0700
+Subject: [PATCH 113/267] IB: remove redundant INFINIBAND kconfig dependencies
+
+INFINIBAND_ADDR_TRANS depends on INFINIBAND.  So there's no need for
+options which depend INFINIBAND_ADDR_TRANS to also depend on INFINIBAND.
+Remove the unnecessary INFINIBAND depends.
+
+Signed-off-by: Greg Thelen <gthelen@google.com>
+Signed-off-by: Doug Ledford <dledford@redhat.com>
+---
+ fs/cifs/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/Kconfig b/fs/cifs/Kconfig
+index 5f132d59dfc2..d61e2de8d0eb 100644
+--- a/fs/cifs/Kconfig
++++ b/fs/cifs/Kconfig
+@@ -197,7 +197,7 @@ config CIFS_SMB311
+ 
+ config CIFS_SMB_DIRECT
+ 	bool "SMB Direct support (Experimental)"
+-	depends on CIFS=m && INFINIBAND && INFINIBAND_ADDR_TRANS || CIFS=y && INFINIBAND=y && INFINIBAND_ADDR_TRANS=y
++	depends on CIFS=m && INFINIBAND_ADDR_TRANS || CIFS=y && INFINIBAND_ADDR_TRANS=y
+ 	help
+ 	  Enables SMB Direct experimental support for SMB 3.0, 3.02 and 3.1.1.
+ 	  SMB Direct allows transferring SMB packets over RDMA. If unsure,
+-- 
+2.17.1
+

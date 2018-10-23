@@ -1,8 +1,8 @@
 From 8ef130f9ec27973f7b49e20c5a3b9134ca33026c Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:37 -0700
-Subject: [PATCH 36/66] CIFS: SMBD: Implement function to destroy a SMB Direct
- connection
+Subject: [PATCH 036/267] CIFS: SMBD: Implement function to destroy a SMB
+ Direct connection
 
 Add function to tear down a SMB Direct connection. This is used by upper layer
 to free all SMB Direct connection and transport resources.
@@ -65,5 +65,5 @@ index f1db2ee7c8c2..f0ce934650c1 100644
  
  #endif
 -- 
-2.14.1
+2.17.1
 

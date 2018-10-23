@@ -1,7 +1,7 @@
 From 8801e902337151039a87d87789d1408c4eccc3e7 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:49 -0700
-Subject: [PATCH 48/66] CIFS: SMBD: Disable signing on SMB direct transport
+Subject: [PATCH 048/267] CIFS: SMBD: Disable signing on SMB direct transport
 
 Currently the CIFS SMB Direct implementation (experimental) doesn't properly
 support signing. Disable it when SMB Direct is in use for transport.
@@ -53,5 +53,5 @@ index bee0871d6dda..a3e67beb73e2 100644
  	 * validation ioctl must be signed, so no point sending this if we
  	 * can not sign it (ie are not known user).  Even if signing is not
 -- 
-2.14.1
+2.17.1
 

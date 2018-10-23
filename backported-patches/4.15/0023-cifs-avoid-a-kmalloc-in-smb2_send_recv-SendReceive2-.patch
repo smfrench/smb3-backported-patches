@@ -1,7 +1,7 @@
 From 3cecf4865cd3ea31272750edf38e73c59ff7540c Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Tue, 21 Nov 2017 15:08:07 +1100
-Subject: [PATCH 23/66] cifs: avoid a kmalloc in smb2_send_recv/SendReceive2
+Subject: [PATCH 023/267] cifs: avoid a kmalloc in smb2_send_recv/SendReceive2
  for the common case
 
 In both functions, use an array of 8 (arbitrary but should be big enough
@@ -101,5 +101,5 @@ index e678307bb7a0..510f41a435c8 100644
  }
  
 -- 
-2.14.1
+2.17.1
 

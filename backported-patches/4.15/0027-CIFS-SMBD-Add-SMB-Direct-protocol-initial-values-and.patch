@@ -1,8 +1,8 @@
 From 03bee01d6215d0438e8a36b4ecb1a002625d0713 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Tue, 7 Nov 2017 01:54:56 -0700
-Subject: [PATCH 27/66] CIFS: SMBD: Add SMB Direct protocol initial values and
- constants
+Subject: [PATCH 027/267] CIFS: SMBD: Add SMB Direct protocol initial values
+ and constants
 
 To prepare for protocol implementation, add constants and user-configurable
 values for the SMB Direct protocol.
@@ -12,8 +12,8 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Acked-by: Ronnie Sahlberg <lsahlber.redhat.com>
 Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 ---
- fs/cifs/smbdirect.c | 77 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/cifs/smbdirect.h | 21 +++++++++++++++
+ fs/cifs/smbdirect.c | 77 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/cifs/smbdirect.h | 21 +++++++++++++
  2 files changed, 98 insertions(+)
  create mode 100644 fs/cifs/smbdirect.c
  create mode 100644 fs/cifs/smbdirect.h
@@ -129,5 +129,5 @@ index 000000000000..c55f28bf7a7f
 +#define SMBDIRECT_MAX_SGE	16
 +#endif
 -- 
-2.14.1
+2.17.1
 

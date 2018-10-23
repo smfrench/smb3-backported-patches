@@ -1,0 +1,46 @@
+From 44907d79002466049fdbb8ef15730d185e0808b4 Mon Sep 17 00:00:00 2001
+From: Al Viro <viro@zeniv.linux.org.uk>
+Date: Fri, 8 Jun 2018 13:32:02 -0400
+Subject: [PATCH 206/267] get rid of 'opened' argument of ->atomic_open() -
+ part 3
+
+now it can be done...
+
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ fs/cifs/cifsfs.h | 3 +--
+ fs/cifs/dir.c    | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
+index 5f0231803431..f3a78efc3109 100644
+--- a/fs/cifs/cifsfs.h
++++ b/fs/cifs/cifsfs.h
+@@ -65,8 +65,7 @@ extern struct inode *cifs_root_iget(struct super_block *);
+ extern int cifs_create(struct inode *, struct dentry *, umode_t,
+ 		       bool excl);
+ extern int cifs_atomic_open(struct inode *, struct dentry *,
+-			    struct file *, unsigned, umode_t,
+-			    int *);
++			    struct file *, unsigned, umode_t);
+ extern struct dentry *cifs_lookup(struct inode *, struct dentry *,
+ 				  unsigned int);
+ extern int cifs_unlink(struct inode *dir, struct dentry *dentry);
+diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
+index 891bfd62e67a..3713d22b95a7 100644
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -465,8 +465,7 @@ cifs_do_create(struct inode *inode, struct dentry *direntry, unsigned int xid,
+ 
+ int
+ cifs_atomic_open(struct inode *inode, struct dentry *direntry,
+-		 struct file *file, unsigned oflags, umode_t mode,
+-		 int *opened)
++		 struct file *file, unsigned oflags, umode_t mode)
+ {
+ 	int rc;
+ 	unsigned int xid;
+-- 
+2.17.1
+

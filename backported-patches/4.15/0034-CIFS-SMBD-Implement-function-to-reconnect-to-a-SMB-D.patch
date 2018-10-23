@@ -1,7 +1,7 @@
 From ad57b8e1726ed1b61f74c278c602cd5aab21bd95 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:35 -0700
-Subject: [PATCH 34/66] CIFS: SMBD: Implement function to reconnect to a SMB
+Subject: [PATCH 034/267] CIFS: SMBD: Implement function to reconnect to a SMB
  Direct transport
 
 Add function to implement a reconnect to SMB Direct. This involves tearing down
@@ -84,5 +84,5 @@ index 25b3782cc692..f1db2ee7c8c2 100644
  
  #endif
 -- 
-2.14.1
+2.17.1
 

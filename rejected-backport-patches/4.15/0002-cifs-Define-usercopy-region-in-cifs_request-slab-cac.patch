@@ -1,7 +1,8 @@
 From de046449045a329bae5c9256e55b58a685a22532 Mon Sep 17 00:00:00 2001
 From: David Windsor <dave@nullcore.net>
 Date: Sat, 10 Jun 2017 22:50:33 -0400
-Subject: [PATCH 02/66] cifs: Define usercopy region in cifs_request slab cache
+Subject: [PATCH 002/267] cifs: Define usercopy region in cifs_request slab
+ cache
 
 CIFS request buffers, stored in the cifs_request slab cache, need to be
 copied to/from userspace.
@@ -72,5 +73,5 @@ index 31b7565b1617..29f4b0290fbd 100644
  		mempool_destroy(cifs_req_poolp);
  		kmem_cache_destroy(cifs_req_cachep);
 -- 
-2.14.1
+2.17.1
 

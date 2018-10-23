@@ -1,7 +1,7 @@
 From f5688a6d7c5c52ce3e9f787694ae4e3c75aa6d5a Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Mon, 20 Nov 2017 11:24:41 +1100
-Subject: [PATCH 15/66] cifs: remove rfc1002 header from smb2 read/write
+Subject: [PATCH 015/267] cifs: remove rfc1002 header from smb2 read/write
  requests
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
@@ -9,7 +9,7 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Acked-by: Pavel Shilovsky <pshilov@microsoft.com>
 Reviewed-by: Aurelien Aptel <aaptel@suse.com>
 ---
- fs/cifs/smb2pdu.c | 51 ++++++++++++++++++++++-----------------------------
+ fs/cifs/smb2pdu.c | 51 ++++++++++++++++++++---------------------------
  fs/cifs/smb2pdu.h |  2 +-
  2 files changed, 23 insertions(+), 30 deletions(-)
 
@@ -165,5 +165,5 @@ index 0c33fc8cce71..3c856f058be7 100644
  	__le16 DataOffset; /* offset from start of SMB2 header to write data */
  	__le32 Length;
 -- 
-2.14.1
+2.17.1
 

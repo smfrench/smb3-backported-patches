@@ -1,7 +1,7 @@
 From ade7db991b47ab3016a414468164f4966bd08202 Mon Sep 17 00:00:00 2001
 From: Arnd Bergmann <arnd@arndb.de>
 Date: Fri, 2 Feb 2018 16:48:47 +0100
-Subject: [PATCH 64/66] cifs: silence compiler warnings showing up with
+Subject: [PATCH 064/267] cifs: silence compiler warnings showing up with
  gcc-8.0.0
 
 This bug was fixed before, but came up again with the latest
@@ -36,5 +36,5 @@ index 4e0922d24eb2..9ceebf30eb22 100644
  	pSMB->DataOffset = cpu_to_le16(offset);
  	pSMB->SetupCount = 1;
 -- 
-2.14.1
+2.17.1
 

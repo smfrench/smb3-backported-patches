@@ -1,7 +1,7 @@
 From 781a8050f2a8e1474a75122b7d940959cc579e14 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:36 -0700
-Subject: [PATCH 35/66] CIFS: SMBD: Upper layer reconnects to SMB Direct
+Subject: [PATCH 035/267] CIFS: SMBD: Upper layer reconnects to SMB Direct
  session
 
 Do a reconnect on SMB Direct when it is used as the connection. Reconnect can
@@ -32,5 +32,5 @@ index fafaecb5fb18..fc460663b308 100644
  			cifs_dbg(FYI, "reconnect error %d\n", rc);
  			mutex_unlock(&server->srv_mutex);
 -- 
-2.14.1
+2.17.1
 

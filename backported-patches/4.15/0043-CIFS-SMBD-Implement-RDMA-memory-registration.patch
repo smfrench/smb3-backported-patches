@@ -1,7 +1,7 @@
 From c7398583340a6d82b8bb7f7f21edcde27dc6a898 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:44 -0700
-Subject: [PATCH 43/66] CIFS: SMBD: Implement RDMA memory registration
+Subject: [PATCH 043/267] CIFS: SMBD: Implement RDMA memory registration
 
 Memory registration is used for transferring payload via RDMA read or write.
 After I/O is done, memory registrations are recovered and reused. This
@@ -12,8 +12,8 @@ Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 Reviewed-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
 ---
- fs/cifs/smbdirect.c | 421 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/cifs/smbdirect.h |  53 +++++++
+ fs/cifs/smbdirect.c | 421 ++++++++++++++++++++++++++++++++++++++++++++
+ fs/cifs/smbdirect.h |  53 ++++++
  2 files changed, 474 insertions(+)
 
 diff --git a/fs/cifs/smbdirect.c b/fs/cifs/smbdirect.c
@@ -568,5 +568,5 @@ index 27453ef2181f..fdb8df84fa1f 100644
  #define cifs_rdma_enabled(server)	0
  struct smbd_connection {};
 -- 
-2.14.1
+2.17.1
 

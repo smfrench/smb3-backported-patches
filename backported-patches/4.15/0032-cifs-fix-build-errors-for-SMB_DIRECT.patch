@@ -1,7 +1,7 @@
 From 0933d6fa748b6283be6242f7f99ad3f4dc70e143 Mon Sep 17 00:00:00 2001
 From: Randy Dunlap <rdunlap@infradead.org>
 Date: Tue, 2 Jan 2018 09:43:10 -0800
-Subject: [PATCH 32/66] cifs: fix build errors for SMB_DIRECT
+Subject: [PATCH 032/267] cifs: fix build errors for SMB_DIRECT
 
 Prevent build errors when CIFS=y and INFINIBAND=m.
 
@@ -57,5 +57,5 @@ index 500fd69fb58b..c71971c01c63 100644
  	  Enables SMB Direct experimental support for SMB 3.0, 3.02 and 3.1.1.
  	  SMB Direct allows transferring SMB packets over RDMA. If unsure,
 -- 
-2.14.1
+2.17.1
 

@@ -1,0 +1,36 @@
+From 73a09dd94377e4b186b300bd5461920710c7c3d5 Mon Sep 17 00:00:00 2001
+From: Al Viro <viro@zeniv.linux.org.uk>
+Date: Fri, 8 Jun 2018 13:22:02 -0400
+Subject: [PATCH 204/267] introduce FMODE_CREATED and switch to it
+
+Parallel to FILE_CREATED, goes into ->f_mode instead of *opened.
+NFS is a bit of a wart here - it doesn't have file at the point
+where FILE_CREATED used to be set, so we need to propagate it
+there (for now).  IMA is another one (here and everywhere)...
+
+Note that this needs do_dentry_open() to leave old bits in ->f_mode
+alone - we want it to preserve FMODE_CREATED if it had been already
+set (no other bit can be there).
+
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ fs/cifs/dir.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
+index ddae52bd1993..21d7e393900e 100644
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -539,7 +539,7 @@ cifs_atomic_open(struct inode *inode, struct dentry *direntry,
+ 	}
+ 
+ 	if ((oflags & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL))
+-		*opened |= FILE_CREATED;
++		file->f_mode |= FMODE_CREATED;
+ 
+ 	rc = finish_open(file, direntry, generic_file_open, opened);
+ 	if (rc) {
+-- 
+2.17.1
+

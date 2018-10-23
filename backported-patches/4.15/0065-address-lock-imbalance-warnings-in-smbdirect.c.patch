@@ -1,7 +1,7 @@
 From f9de151bf2b8055563b85ff6896fd86891bbe6c5 Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Sat, 3 Feb 2018 19:45:07 -0600
-Subject: [PATCH 65/66] address lock imbalance warnings in smbdirect.c
+Subject: [PATCH 065/267] address lock imbalance warnings in smbdirect.c
 
 Although at least one of these was an overly strict sparse warning
 in the new smbdirect code, it is cleaner to fix - so no warnings.
@@ -52,5 +52,5 @@ index 5130492847eb..91710eb571fb 100644
  				info->count_dequeue_reassembly_queue++;
  				put_receive_buffer(info, response);
 -- 
-2.14.1
+2.17.1
 

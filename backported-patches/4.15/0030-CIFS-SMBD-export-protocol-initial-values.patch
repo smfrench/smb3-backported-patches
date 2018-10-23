@@ -1,7 +1,7 @@
 From d8ec913b178156661c2b941f94ec22487225d3dc Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Tue, 7 Nov 2017 01:54:58 -0700
-Subject: [PATCH 30/66] CIFS: SMBD: export protocol initial values
+Subject: [PATCH 030/267] CIFS: SMBD: export protocol initial values
 
 For use-configurable SMB Direct protocol values, export them to /proc/fs/cifs.
 
@@ -10,7 +10,7 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Acked-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 ---
- fs/cifs/cifs_debug.c | 79 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/cifs/cifs_debug.c | 79 ++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 79 insertions(+)
 
 diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
@@ -125,5 +125,5 @@ index 42a57ebde630..e6045fd5c856 100644
  }
  
 -- 
-2.14.1
+2.17.1
 

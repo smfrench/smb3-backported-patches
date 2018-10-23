@@ -1,8 +1,8 @@
 From bce9ce7cc0766f5fe532cb89567ca2ac5ad80a1f Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:38 -0700
-Subject: [PATCH 37/66] CIFS: SMBD: Upper layer destroys SMB Direct session on
- shutdown or umount
+Subject: [PATCH 037/267] CIFS: SMBD: Upper layer destroys SMB Direct session
+ on shutdown or umount
 
 When upper layer wants to umount, make it call shutdown on transport when
 SMB Direct is used.
@@ -32,5 +32,5 @@ index fc460663b308..d8bfa89161e2 100644
  		sock_release(server->ssocket);
  		server->ssocket = NULL;
 -- 
-2.14.1
+2.17.1
 

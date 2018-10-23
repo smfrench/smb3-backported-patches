@@ -1,7 +1,7 @@
 From 13cacea7bb20fbbd3cb400953b3142cde139abaa Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Mon, 20 Nov 2017 11:24:30 +1100
-Subject: [PATCH 04/66] cifs: remove rfc1002 header from smb2_negotiate_req
+Subject: [PATCH 004/267] cifs: remove rfc1002 header from smb2_negotiate_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -133,5 +133,5 @@ index c2ec934be968..0fe2382597ad 100644
  	__le16 DialectCount;
  	__le16 SecurityMode;
 -- 
-2.14.1
+2.17.1
 

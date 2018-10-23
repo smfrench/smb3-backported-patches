@@ -1,7 +1,7 @@
 From 8339dd32fbad71834d61b9103e8884ada9bf3e1c Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Tue, 7 Nov 2017 01:54:55 -0700
-Subject: [PATCH 26/66] CIFS: SMBD: Add rdma mount option
+Subject: [PATCH 026/267] CIFS: SMBD: Add rdma mount option
 
 Add "rdma" to CIFS mount options to connect to SMB Direct.
 Add checks to validate this is used on SMB 3.X dialects.
@@ -131,5 +131,5 @@ index 0bfc2280436d..64be6f9e54a2 100644
  	tcp_ses->credits = 1;
  	init_waitqueue_head(&tcp_ses->response_q);
 -- 
-2.14.1
+2.17.1
 

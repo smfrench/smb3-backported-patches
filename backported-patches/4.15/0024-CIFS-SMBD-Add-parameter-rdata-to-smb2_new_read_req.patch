@@ -1,7 +1,7 @@
 From 2dabfd5baba641588b82ba499ef81c9a378bbb23 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Tue, 7 Nov 2017 01:54:53 -0700
-Subject: [PATCH 24/66] CIFS: SMBD: Add parameter rdata to smb2_new_read_req
+Subject: [PATCH 024/267] CIFS: SMBD: Add parameter rdata to smb2_new_read_req
 
 This patch is for preparing upper layer for doing SMB read via RDMA write.
 
@@ -66,5 +66,5 @@ index 9f883f4db23d..c0dc0491af93 100644
  		return rc;
  
 -- 
-2.14.1
+2.17.1
 

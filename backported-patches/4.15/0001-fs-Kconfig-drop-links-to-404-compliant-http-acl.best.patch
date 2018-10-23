@@ -1,7 +1,7 @@
 From 91581e4c60db35268ad67c550f5c551045f592f5 Mon Sep 17 00:00:00 2001
 From: Adam Borowski <kilobyte@angband.pl>
 Date: Wed, 20 Dec 2017 14:58:52 +0100
-Subject: [PATCH 01/66] fs/*/Kconfig: drop links to 404-compliant
+Subject: [PATCH 001/267] fs/*/Kconfig: drop links to 404-compliant
  http://acl.bestbits.at
 
 This link is replicated in most filesystems' config stanzas.  Referring
@@ -50,5 +50,5 @@ index d5b2e12b5d02..e73d25f4b97a 100644
            If unsure, say Y.
  
 -- 
-2.14.1
+2.17.1
 

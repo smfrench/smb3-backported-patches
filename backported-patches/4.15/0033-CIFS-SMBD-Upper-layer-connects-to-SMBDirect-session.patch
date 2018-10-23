@@ -1,7 +1,7 @@
 From 2f8946464b11822169b9f10c7cf58a2440b51d54 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:34 -0700
-Subject: [PATCH 33/66] CIFS: SMBD: Upper layer connects to SMBDirect session
+Subject: [PATCH 033/267] CIFS: SMBD: Upper layer connects to SMBDirect session
 
 When "rdma" is specified in the mount option, make CIFS connect to
 SMB Direct.
@@ -67,5 +67,5 @@ index 64be6f9e54a2..fafaecb5fb18 100644
  	 * since we're in a cifs function already, we know that
  	 * this will succeed. No need for try_module_get().
 -- 
-2.14.1
+2.17.1
 

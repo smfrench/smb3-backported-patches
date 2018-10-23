@@ -1,7 +1,7 @@
 From e36c048a9bd853b64c2b32a2ed90be2eff9bbd62 Mon Sep 17 00:00:00 2001
 From: Arnd Bergmann <arnd@arndb.de>
 Date: Wed, 10 Jan 2018 21:51:05 +0100
-Subject: [PATCH 51/66] CIFS: SMBD: work around gcc -Wmaybe-uninitialized
+Subject: [PATCH 051/267] CIFS: SMBD: work around gcc -Wmaybe-uninitialized
  warning
 
 GCC versions from 4.9 to 6.3 produce a false-positive warning when
@@ -72,5 +72,5 @@ index f527e22650f5..f9234ed83a60 100644
  		info->first_entry_offset = offset;
  		log_read(INFO, "returning to thread data_read=%d "
 -- 
-2.14.1
+2.17.1
 

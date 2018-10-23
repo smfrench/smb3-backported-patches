@@ -1,7 +1,7 @@
 From 4a1360d01d7b6bb9d9c295378850b6d1ae134a0f Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Thu, 25 Jan 2018 18:47:52 +0100
-Subject: [PATCH 59/66] CIFS: document tcon/ses/server refcount dance
+Subject: [PATCH 059/267] CIFS: document tcon/ses/server refcount dance
 
 Signed-off-by: Aurelien Aptel <aaptel@suse.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -69,5 +69,5 @@ index ee2ab86bff5b..a726f524fb84 100644
  		return tcon;
  	}
 -- 
-2.14.1
+2.17.1
 

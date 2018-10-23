@@ -1,7 +1,7 @@
 From 4eecf4cfe168cd0cf18eab6580b3eb27a2d26a1f Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 9 Nov 2017 12:14:18 +1100
-Subject: [PATCH 06/66] cifs: remove rfc1002 header from
+Subject: [PATCH 006/267] cifs: remove rfc1002 header from
  smb2_tree_disconnect_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
@@ -65,5 +65,5 @@ index 0799e0957499..8b7aadefd4a5 100644
  	__le16 Reserved;
  } __packed;
 -- 
-2.14.1
+2.17.1
 

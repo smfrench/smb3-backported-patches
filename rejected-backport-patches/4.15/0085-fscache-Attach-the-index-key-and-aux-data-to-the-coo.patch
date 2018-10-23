@@ -1,0 +1,486 @@
+From 402cb8dda949d9b8c0df20ad2527d139faad7ca1 Mon Sep 17 00:00:00 2001
+From: David Howells <dhowells@redhat.com>
+Date: Wed, 4 Apr 2018 13:41:28 +0100
+Subject: [PATCH 085/267] fscache: Attach the index key and aux data to the
+ cookie
+
+Attach copies of the index key and auxiliary data to the fscache cookie so
+that:
+
+ (1) The callbacks to the netfs for this stuff can be eliminated.  This
+     can simplify things in the cache as the information is still
+     available, even after the cache has relinquished the cookie.
+
+ (2) Simplifies the locking requirements of accessing the information as we
+     don't have to worry about the netfs object going away on us.
+
+ (3) The cache can do lazy updating of the coherency information on disk.
+     As long as the cache is flushed before reboot/poweroff, there's no
+     need to update the coherency info on disk every time it changes.
+
+ (4) Cookies can be hashed or put in a tree as the index key is easily
+     available.  This allows:
+
+     (a) Checks for duplicate cookies can be made at the top fscache layer
+     	 rather than down in the bowels of the cache backend.
+
+     (b) Caching can be added to a netfs object that has a cookie if the
+     	 cache is brought online after the netfs object is allocated.
+
+A certain amount of space is made in the cookie for inline copies of the
+data, but if it won't fit there, extra memory will be allocated for it.
+
+The downside of this is that live cache operation requires more memory.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Anna Schumaker <anna.schumaker@netapp.com>
+Tested-by: Steve Dickson <steved@redhat.com>
+---
+ fs/cifs/cache.c   | 153 +---------------------------------------------
+ fs/cifs/fscache.c | 122 ++++++++++++++++++++++++++++++------
+ fs/cifs/fscache.h |  13 ++++
+ 3 files changed, 118 insertions(+), 170 deletions(-)
+
+diff --git a/fs/cifs/cache.c b/fs/cifs/cache.c
+index 2c14020e5e1d..b4fa270ef532 100644
+--- a/fs/cifs/cache.c
++++ b/fs/cifs/cache.c
+@@ -45,68 +45,12 @@ void cifs_fscache_unregister(void)
+ 	fscache_unregister_netfs(&cifs_fscache_netfs);
+ }
+ 
+-/*
+- * Key layout of CIFS server cache index object
+- */
+-struct cifs_server_key {
+-	uint16_t	family;		/* address family */
+-	__be16		port;		/* IP port */
+-	union {
+-		struct in_addr	ipv4_addr;
+-		struct in6_addr	ipv6_addr;
+-	} addr[0];
+-};
+-
+-/*
+- * Server object keyed by {IPaddress,port,family} tuple
+- */
+-static uint16_t cifs_server_get_key(const void *cookie_netfs_data,
+-				   void *buffer, uint16_t maxbuf)
+-{
+-	const struct TCP_Server_Info *server = cookie_netfs_data;
+-	const struct sockaddr *sa = (struct sockaddr *) &server->dstaddr;
+-	const struct sockaddr_in *addr = (struct sockaddr_in *) sa;
+-	const struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) sa;
+-	struct cifs_server_key *key = buffer;
+-	uint16_t key_len = sizeof(struct cifs_server_key);
+-
+-	memset(key, 0, key_len);
+-
+-	/*
+-	 * Should not be a problem as sin_family/sin6_family overlays
+-	 * sa_family field
+-	 */
+-	switch (sa->sa_family) {
+-	case AF_INET:
+-		key->family = sa->sa_family;
+-		key->port = addr->sin_port;
+-		key->addr[0].ipv4_addr = addr->sin_addr;
+-		key_len += sizeof(key->addr[0].ipv4_addr);
+-		break;
+-
+-	case AF_INET6:
+-		key->family = sa->sa_family;
+-		key->port = addr6->sin6_port;
+-		key->addr[0].ipv6_addr = addr6->sin6_addr;
+-		key_len += sizeof(key->addr[0].ipv6_addr);
+-		break;
+-
+-	default:
+-		cifs_dbg(VFS, "Unknown network family '%d'\n", sa->sa_family);
+-		key_len = 0;
+-		break;
+-	}
+-
+-	return key_len;
+-}
+-
+ /*
+  * Server object for FS-Cache
+  */
+ const struct fscache_cookie_def cifs_fscache_server_index_def = {
+ 	.name = "CIFS.server",
+ 	.type = FSCACHE_COOKIE_TYPE_INDEX,
+-	.get_key = cifs_server_get_key,
+ };
+ 
+ /*
+@@ -116,7 +60,7 @@ struct cifs_fscache_super_auxdata {
+ 	u64	resource_id;		/* unique server resource id */
+ };
+ 
+-static char *extract_sharename(const char *treename)
++char *extract_sharename(const char *treename)
+ {
+ 	const char *src;
+ 	char *delim, *dst;
+@@ -140,52 +84,6 @@ static char *extract_sharename(const char *treename)
+ 	return dst;
+ }
+ 
+-/*
+- * Superblock object currently keyed by share name
+- */
+-static uint16_t cifs_super_get_key(const void *cookie_netfs_data, void *buffer,
+-				   uint16_t maxbuf)
+-{
+-	const struct cifs_tcon *tcon = cookie_netfs_data;
+-	char *sharename;
+-	uint16_t len;
+-
+-	sharename = extract_sharename(tcon->treeName);
+-	if (IS_ERR(sharename)) {
+-		cifs_dbg(FYI, "%s: couldn't extract sharename\n", __func__);
+-		sharename = NULL;
+-		return 0;
+-	}
+-
+-	len = strlen(sharename);
+-	if (len > maxbuf)
+-		return 0;
+-
+-	memcpy(buffer, sharename, len);
+-
+-	kfree(sharename);
+-
+-	return len;
+-}
+-
+-static uint16_t
+-cifs_fscache_super_get_aux(const void *cookie_netfs_data, void *buffer,
+-			   uint16_t maxbuf)
+-{
+-	struct cifs_fscache_super_auxdata auxdata;
+-	const struct cifs_tcon *tcon = cookie_netfs_data;
+-
+-	memset(&auxdata, 0, sizeof(auxdata));
+-	auxdata.resource_id = tcon->resource_id;
+-
+-	if (maxbuf > sizeof(auxdata))
+-		maxbuf = sizeof(auxdata);
+-
+-	memcpy(buffer, &auxdata, maxbuf);
+-
+-	return maxbuf;
+-}
+-
+ static enum
+ fscache_checkaux cifs_fscache_super_check_aux(void *cookie_netfs_data,
+ 					      const void *data,
+@@ -212,36 +110,9 @@ fscache_checkaux cifs_fscache_super_check_aux(void *cookie_netfs_data,
+ const struct fscache_cookie_def cifs_fscache_super_index_def = {
+ 	.name = "CIFS.super",
+ 	.type = FSCACHE_COOKIE_TYPE_INDEX,
+-	.get_key = cifs_super_get_key,
+-	.get_aux = cifs_fscache_super_get_aux,
+ 	.check_aux = cifs_fscache_super_check_aux,
+ };
+ 
+-/*
+- * Auxiliary data attached to CIFS inode within the cache
+- */
+-struct cifs_fscache_inode_auxdata {
+-	struct timespec	last_write_time;
+-	struct timespec	last_change_time;
+-	u64		eof;
+-};
+-
+-static uint16_t cifs_fscache_inode_get_key(const void *cookie_netfs_data,
+-					   void *buffer, uint16_t maxbuf)
+-{
+-	const struct cifsInodeInfo *cifsi = cookie_netfs_data;
+-	uint16_t keylen;
+-
+-	/* use the UniqueId as the key */
+-	keylen = sizeof(cifsi->uniqueid);
+-	if (keylen > maxbuf)
+-		keylen = 0;
+-	else
+-		memcpy(buffer, &cifsi->uniqueid, keylen);
+-
+-	return keylen;
+-}
+-
+ static void
+ cifs_fscache_inode_get_attr(const void *cookie_netfs_data, uint64_t *size)
+ {
+@@ -250,26 +121,6 @@ cifs_fscache_inode_get_attr(const void *cookie_netfs_data, uint64_t *size)
+ 	*size = cifsi->vfs_inode.i_size;
+ }
+ 
+-static uint16_t
+-cifs_fscache_inode_get_aux(const void *cookie_netfs_data, void *buffer,
+-			   uint16_t maxbuf)
+-{
+-	struct cifs_fscache_inode_auxdata auxdata;
+-	const struct cifsInodeInfo *cifsi = cookie_netfs_data;
+-
+-	memset(&auxdata, 0, sizeof(auxdata));
+-	auxdata.eof = cifsi->server_eof;
+-	auxdata.last_write_time = cifsi->vfs_inode.i_mtime;
+-	auxdata.last_change_time = cifsi->vfs_inode.i_ctime;
+-
+-	if (maxbuf > sizeof(auxdata))
+-		maxbuf = sizeof(auxdata);
+-
+-	memcpy(buffer, &auxdata, maxbuf);
+-
+-	return maxbuf;
+-}
+-
+ static enum
+ fscache_checkaux cifs_fscache_inode_check_aux(void *cookie_netfs_data,
+ 					      const void *data,
+@@ -295,8 +146,6 @@ fscache_checkaux cifs_fscache_inode_check_aux(void *cookie_netfs_data,
+ const struct fscache_cookie_def cifs_fscache_inode_object_def = {
+ 	.name		= "CIFS.uniqueid",
+ 	.type		= FSCACHE_COOKIE_TYPE_DATAFILE,
+-	.get_key	= cifs_fscache_inode_get_key,
+ 	.get_attr	= cifs_fscache_inode_get_attr,
+-	.get_aux	= cifs_fscache_inode_get_aux,
+ 	.check_aux	= cifs_fscache_inode_check_aux,
+ };
+diff --git a/fs/cifs/fscache.c b/fs/cifs/fscache.c
+index 8d4b7bc8ae91..b89b59b01759 100644
+--- a/fs/cifs/fscache.c
++++ b/fs/cifs/fscache.c
+@@ -23,11 +23,63 @@
+ #include "cifs_debug.h"
+ #include "cifs_fs_sb.h"
+ 
++/*
++ * Key layout of CIFS server cache index object
++ */
++struct cifs_server_key {
++	struct {
++		uint16_t	family;		/* address family */
++		__be16		port;		/* IP port */
++	} hdr;
++	union {
++		struct in_addr	ipv4_addr;
++		struct in6_addr	ipv6_addr;
++	};
++} __packed;
++
++/*
++ * Get a cookie for a server object keyed by {IPaddress,port,family} tuple
++ */
+ void cifs_fscache_get_client_cookie(struct TCP_Server_Info *server)
+ {
++	const struct sockaddr *sa = (struct sockaddr *) &server->dstaddr;
++	const struct sockaddr_in *addr = (struct sockaddr_in *) sa;
++	const struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) sa;
++	struct cifs_server_key key;
++	uint16_t key_len = sizeof(key.hdr);
++
++	memset(&key, 0, sizeof(key));
++
++	/*
++	 * Should not be a problem as sin_family/sin6_family overlays
++	 * sa_family field
++	 */
++	key.hdr.family = sa->sa_family;
++	switch (sa->sa_family) {
++	case AF_INET:
++		key.hdr.port = addr->sin_port;
++		key.ipv4_addr = addr->sin_addr;
++		key_len += sizeof(key.ipv4_addr);
++		break;
++
++	case AF_INET6:
++		key.hdr.port = addr6->sin6_port;
++		key.ipv6_addr = addr6->sin6_addr;
++		key_len += sizeof(key.ipv6_addr);
++		break;
++
++	default:
++		cifs_dbg(VFS, "Unknown network family '%d'\n", sa->sa_family);
++		server->fscache = NULL;
++		return;
++	}
++
+ 	server->fscache =
+ 		fscache_acquire_cookie(cifs_fscache_netfs.primary_index,
+-				&cifs_fscache_server_index_def, server, true);
++				       &cifs_fscache_server_index_def,
++				       &key, key_len,
++				       NULL, 0,
++				       server, true);
+ 	cifs_dbg(FYI, "%s: (0x%p/0x%p)\n",
+ 		 __func__, server, server->fscache);
+ }
+@@ -36,17 +88,29 @@ void cifs_fscache_release_client_cookie(struct TCP_Server_Info *server)
+ {
+ 	cifs_dbg(FYI, "%s: (0x%p/0x%p)\n",
+ 		 __func__, server, server->fscache);
+-	fscache_relinquish_cookie(server->fscache, 0);
++	fscache_relinquish_cookie(server->fscache, NULL, false);
+ 	server->fscache = NULL;
+ }
+ 
+ void cifs_fscache_get_super_cookie(struct cifs_tcon *tcon)
+ {
+ 	struct TCP_Server_Info *server = tcon->ses->server;
++	char *sharename;
++
++	sharename = extract_sharename(tcon->treeName);
++	if (IS_ERR(sharename)) {
++		cifs_dbg(FYI, "%s: couldn't extract sharename\n", __func__);
++		tcon->fscache = NULL;
++		return;
++	}
+ 
+ 	tcon->fscache =
+ 		fscache_acquire_cookie(server->fscache,
+-				&cifs_fscache_super_index_def, tcon, true);
++				       &cifs_fscache_super_index_def,
++				       sharename, strlen(sharename),
++				       &tcon->resource_id, sizeof(tcon->resource_id),
++				       tcon, true);
++	kfree(sharename);
+ 	cifs_dbg(FYI, "%s: (0x%p/0x%p)\n",
+ 		 __func__, server->fscache, tcon->fscache);
+ }
+@@ -54,10 +118,28 @@ void cifs_fscache_get_super_cookie(struct cifs_tcon *tcon)
+ void cifs_fscache_release_super_cookie(struct cifs_tcon *tcon)
+ {
+ 	cifs_dbg(FYI, "%s: (0x%p)\n", __func__, tcon->fscache);
+-	fscache_relinquish_cookie(tcon->fscache, 0);
++	fscache_relinquish_cookie(tcon->fscache, &tcon->resource_id, false);
+ 	tcon->fscache = NULL;
+ }
+ 
++static void cifs_fscache_acquire_inode_cookie(struct cifsInodeInfo *cifsi,
++					      struct cifs_tcon *tcon)
++{
++	struct cifs_fscache_inode_auxdata auxdata;
++
++	memset(&auxdata, 0, sizeof(auxdata));
++	auxdata.eof = cifsi->server_eof;
++	auxdata.last_write_time = cifsi->vfs_inode.i_mtime;
++	auxdata.last_change_time = cifsi->vfs_inode.i_ctime;
++
++	cifsi->fscache =
++		fscache_acquire_cookie(tcon->fscache,
++				       &cifs_fscache_inode_object_def,
++				       &cifsi->uniqueid, sizeof(cifsi->uniqueid),
++				       &auxdata, sizeof(auxdata),
++				       cifsi, true);
++}
++
+ static void cifs_fscache_enable_inode_cookie(struct inode *inode)
+ {
+ 	struct cifsInodeInfo *cifsi = CIFS_I(inode);
+@@ -67,21 +149,28 @@ static void cifs_fscache_enable_inode_cookie(struct inode *inode)
+ 	if (cifsi->fscache)
+ 		return;
+ 
+-	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_FSCACHE) {
+-		cifsi->fscache = fscache_acquire_cookie(tcon->fscache,
+-				&cifs_fscache_inode_object_def, cifsi, true);
+-		cifs_dbg(FYI, "%s: got FH cookie (0x%p/0x%p)\n",
+-			 __func__, tcon->fscache, cifsi->fscache);
+-	}
++	if (!(cifs_sb->mnt_cifs_flags & CIFS_MOUNT_FSCACHE))
++		return;
++
++	cifs_fscache_acquire_inode_cookie(cifsi, tcon);
++
++	cifs_dbg(FYI, "%s: got FH cookie (0x%p/0x%p)\n",
++		 __func__, tcon->fscache, cifsi->fscache);
+ }
+ 
+ void cifs_fscache_release_inode_cookie(struct inode *inode)
+ {
++	struct cifs_fscache_inode_auxdata auxdata;
+ 	struct cifsInodeInfo *cifsi = CIFS_I(inode);
+ 
+ 	if (cifsi->fscache) {
++		memset(&auxdata, 0, sizeof(auxdata));
++		auxdata.eof = cifsi->server_eof;
++		auxdata.last_write_time = cifsi->vfs_inode.i_mtime;
++		auxdata.last_change_time = cifsi->vfs_inode.i_ctime;
++
+ 		cifs_dbg(FYI, "%s: (0x%p)\n", __func__, cifsi->fscache);
+-		fscache_relinquish_cookie(cifsi->fscache, 0);
++		fscache_relinquish_cookie(cifsi->fscache, &auxdata, false);
+ 		cifsi->fscache = NULL;
+ 	}
+ }
+@@ -93,7 +182,7 @@ static void cifs_fscache_disable_inode_cookie(struct inode *inode)
+ 	if (cifsi->fscache) {
+ 		cifs_dbg(FYI, "%s: (0x%p)\n", __func__, cifsi->fscache);
+ 		fscache_uncache_all_inode_pages(cifsi->fscache, inode);
+-		fscache_relinquish_cookie(cifsi->fscache, 1);
++		fscache_relinquish_cookie(cifsi->fscache, NULL, true);
+ 		cifsi->fscache = NULL;
+ 	}
+ }
+@@ -110,16 +199,14 @@ void cifs_fscache_reset_inode_cookie(struct inode *inode)
+ {
+ 	struct cifsInodeInfo *cifsi = CIFS_I(inode);
+ 	struct cifs_sb_info *cifs_sb = CIFS_SB(inode->i_sb);
++	struct cifs_tcon *tcon = cifs_sb_master_tcon(cifs_sb);
+ 	struct fscache_cookie *old = cifsi->fscache;
+ 
+ 	if (cifsi->fscache) {
+ 		/* retire the current fscache cache and get a new one */
+-		fscache_relinquish_cookie(cifsi->fscache, 1);
++		fscache_relinquish_cookie(cifsi->fscache, NULL, true);
+ 
+-		cifsi->fscache = fscache_acquire_cookie(
+-					cifs_sb_master_tcon(cifs_sb)->fscache,
+-					&cifs_fscache_inode_object_def,
+-					cifsi, true);
++		cifs_fscache_acquire_inode_cookie(cifsi, tcon);
+ 		cifs_dbg(FYI, "%s: new cookie 0x%p oldcookie 0x%p\n",
+ 			 __func__, cifsi->fscache, old);
+ 	}
+@@ -239,4 +326,3 @@ void __cifs_fscache_invalidate_page(struct page *page, struct inode *inode)
+ 	fscache_wait_on_page_write(cookie, page);
+ 	fscache_uncache_page(cookie, page);
+ }
+-
+diff --git a/fs/cifs/fscache.h b/fs/cifs/fscache.h
+index 24794b6cd8ec..c7e3ac251e16 100644
+--- a/fs/cifs/fscache.h
++++ b/fs/cifs/fscache.h
+@@ -27,6 +27,18 @@
+ 
+ #ifdef CONFIG_CIFS_FSCACHE
+ 
++/*
++ * Auxiliary data attached to CIFS inode within the cache
++ */
++struct cifs_fscache_inode_auxdata {
++	struct timespec	last_write_time;
++	struct timespec	last_change_time;
++	u64		eof;
++};
++
++/*
++ * cache.c
++ */
+ extern struct fscache_netfs cifs_fscache_netfs;
+ extern const struct fscache_cookie_def cifs_fscache_server_index_def;
+ extern const struct fscache_cookie_def cifs_fscache_super_index_def;
+@@ -34,6 +46,7 @@ extern const struct fscache_cookie_def cifs_fscache_inode_object_def;
+ 
+ extern int cifs_fscache_register(void);
+ extern void cifs_fscache_unregister(void);
++extern char *extract_sharename(const char *);
+ 
+ /*
+  * fscache.c
+-- 
+2.17.1
+

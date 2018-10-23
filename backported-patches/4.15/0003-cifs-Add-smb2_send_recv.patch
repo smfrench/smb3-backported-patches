@@ -1,7 +1,7 @@
 From 83b7739180de16a0bbf5bfeb0a3b48733e56ccc9 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 9 Nov 2017 12:14:15 +1100
-Subject: [PATCH 03/66] cifs: Add smb2_send_recv
+Subject: [PATCH 003/267] cifs: Add smb2_send_recv
 
 This function is similar to SendReceive2 except it does not expect
 a 4 byte rfc1002 length header in the first io vector.
@@ -79,5 +79,5 @@ index 7efbab013957..e678307bb7a0 100644
  SendReceive(const unsigned int xid, struct cifs_ses *ses,
  	    struct smb_hdr *in_buf, struct smb_hdr *out_buf,
 -- 
-2.14.1
+2.17.1
 

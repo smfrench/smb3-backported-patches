@@ -1,7 +1,7 @@
 From db223a590d45b5e584a430c46a778699a5825cdd Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:45 -0700
-Subject: [PATCH 44/66] CIFS: SMBD: Upper layer performs SMB write via RDMA
+Subject: [PATCH 044/267] CIFS: SMBD: Upper layer performs SMB write via RDMA
  read through memory registration
 
 When sending I/O, if size is larger than rdma_readwrite_threshold we prepare
@@ -23,8 +23,8 @@ Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 Reviewed-by: Ronnie Sahlberg <lsahlber@redhat.com>
 ---
  fs/cifs/cifsglob.h |  3 +++
- fs/cifs/cifssmb.c  |  7 ++++++
- fs/cifs/smb2pdu.c  | 65 +++++++++++++++++++++++++++++++++++++++++++++++++++---
+ fs/cifs/cifssmb.c  |  7 +++++
+ fs/cifs/smb2pdu.c  | 65 +++++++++++++++++++++++++++++++++++++++++++---
  3 files changed, 72 insertions(+), 3 deletions(-)
 
 diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
@@ -168,5 +168,5 @@ index c0dc0491af93..908d7770d15a 100644
  	if (wdata->credits) {
  		shdr->CreditCharge = cpu_to_le16(DIV_ROUND_UP(wdata->bytes,
 -- 
-2.14.1
+2.17.1
 

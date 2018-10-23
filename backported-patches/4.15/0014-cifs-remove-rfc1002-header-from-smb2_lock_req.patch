@@ -1,7 +1,7 @@
 From ced93679cb1634846c93854b9993e11ce0315428 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Tue, 21 Nov 2017 10:07:27 +1100
-Subject: [PATCH 14/66] cifs: remove rfc1002 header from smb2_lock_req
+Subject: [PATCH 014/267] cifs: remove rfc1002 header from smb2_lock_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -69,5 +69,5 @@ index a8102e5f4ebb..0c33fc8cce71 100644
  	__le16 LockCount;
  	__le32 Reserved;
 -- 
-2.14.1
+2.17.1
 

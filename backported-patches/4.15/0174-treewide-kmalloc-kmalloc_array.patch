@@ -1,0 +1,528 @@
+From 6da2ec56059c3c7a7e5f729e6349e74ace1e5c57 Mon Sep 17 00:00:00 2001
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 12 Jun 2018 13:55:00 -0700
+Subject: [PATCH 174/267] treewide: kmalloc() -> kmalloc_array()
+
+The kmalloc() function has a 2-factor argument form, kmalloc_array(). This
+patch replaces cases of:
+
+        kmalloc(a * b, gfp)
+
+with:
+        kmalloc_array(a * b, gfp)
+
+as well as handling cases of:
+
+        kmalloc(a * b * c, gfp)
+
+with:
+
+        kmalloc(array3_size(a, b, c), gfp)
+
+as it's slightly less ugly than:
+
+        kmalloc_array(array_size(a, b), c, gfp)
+
+This does, however, attempt to ignore constant size factors like:
+
+        kmalloc(4 * 1024, gfp)
+
+though any constants defined via macros get caught up in the conversion.
+
+Any factors with a sizeof() of "unsigned char", "char", and "u8" were
+dropped, since they're redundant.
+
+The tools/ directory was manually excluded, since it has its own
+implementation of kmalloc().
+
+The Coccinelle script used for this was:
+
+// Fix redundant parens around sizeof().
+@@
+type TYPE;
+expression THING, E;
+@@
+
+(
+  kmalloc(
+-	(sizeof(TYPE)) * E
++	sizeof(TYPE) * E
+  , ...)
+|
+  kmalloc(
+-	(sizeof(THING)) * E
++	sizeof(THING) * E
+  , ...)
+)
+
+// Drop single-byte sizes and redundant parens.
+@@
+expression COUNT;
+typedef u8;
+typedef __u8;
+@@
+
+(
+  kmalloc(
+-	sizeof(u8) * (COUNT)
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(__u8) * (COUNT)
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(char) * (COUNT)
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(unsigned char) * (COUNT)
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(u8) * COUNT
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(__u8) * COUNT
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(char) * COUNT
++	COUNT
+  , ...)
+|
+  kmalloc(
+-	sizeof(unsigned char) * COUNT
++	COUNT
+  , ...)
+)
+
+// 2-factor product with sizeof(type/expression) and identifier or constant.
+@@
+type TYPE;
+expression THING;
+identifier COUNT_ID;
+constant COUNT_CONST;
+@@
+
+(
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * (COUNT_ID)
++	COUNT_ID, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * COUNT_ID
++	COUNT_ID, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * (COUNT_CONST)
++	COUNT_CONST, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * COUNT_CONST
++	COUNT_CONST, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * (COUNT_ID)
++	COUNT_ID, sizeof(THING)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * COUNT_ID
++	COUNT_ID, sizeof(THING)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * (COUNT_CONST)
++	COUNT_CONST, sizeof(THING)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * COUNT_CONST
++	COUNT_CONST, sizeof(THING)
+  , ...)
+)
+
+// 2-factor product, only identifiers.
+@@
+identifier SIZE, COUNT;
+@@
+
+- kmalloc
++ kmalloc_array
+  (
+-	SIZE * COUNT
++	COUNT, SIZE
+  , ...)
+
+// 3-factor product with 1 sizeof(type) or sizeof(expression), with
+// redundant parens removed.
+@@
+expression THING;
+identifier STRIDE, COUNT;
+type TYPE;
+@@
+
+(
+  kmalloc(
+-	sizeof(TYPE) * (COUNT) * (STRIDE)
++	array3_size(COUNT, STRIDE, sizeof(TYPE))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE) * (COUNT) * STRIDE
++	array3_size(COUNT, STRIDE, sizeof(TYPE))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE) * COUNT * (STRIDE)
++	array3_size(COUNT, STRIDE, sizeof(TYPE))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE) * COUNT * STRIDE
++	array3_size(COUNT, STRIDE, sizeof(TYPE))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING) * (COUNT) * (STRIDE)
++	array3_size(COUNT, STRIDE, sizeof(THING))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING) * (COUNT) * STRIDE
++	array3_size(COUNT, STRIDE, sizeof(THING))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING) * COUNT * (STRIDE)
++	array3_size(COUNT, STRIDE, sizeof(THING))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING) * COUNT * STRIDE
++	array3_size(COUNT, STRIDE, sizeof(THING))
+  , ...)
+)
+
+// 3-factor product with 2 sizeof(variable), with redundant parens removed.
+@@
+expression THING1, THING2;
+identifier COUNT;
+type TYPE1, TYPE2;
+@@
+
+(
+  kmalloc(
+-	sizeof(TYPE1) * sizeof(TYPE2) * COUNT
++	array3_size(COUNT, sizeof(TYPE1), sizeof(TYPE2))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE1) * sizeof(THING2) * (COUNT)
++	array3_size(COUNT, sizeof(TYPE1), sizeof(TYPE2))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING1) * sizeof(THING2) * COUNT
++	array3_size(COUNT, sizeof(THING1), sizeof(THING2))
+  , ...)
+|
+  kmalloc(
+-	sizeof(THING1) * sizeof(THING2) * (COUNT)
++	array3_size(COUNT, sizeof(THING1), sizeof(THING2))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE1) * sizeof(THING2) * COUNT
++	array3_size(COUNT, sizeof(TYPE1), sizeof(THING2))
+  , ...)
+|
+  kmalloc(
+-	sizeof(TYPE1) * sizeof(THING2) * (COUNT)
++	array3_size(COUNT, sizeof(TYPE1), sizeof(THING2))
+  , ...)
+)
+
+// 3-factor product, only identifiers, with redundant parens removed.
+@@
+identifier STRIDE, SIZE, COUNT;
+@@
+
+(
+  kmalloc(
+-	(COUNT) * STRIDE * SIZE
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	COUNT * (STRIDE) * SIZE
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	COUNT * STRIDE * (SIZE)
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	(COUNT) * (STRIDE) * SIZE
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	COUNT * (STRIDE) * (SIZE)
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	(COUNT) * STRIDE * (SIZE)
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	(COUNT) * (STRIDE) * (SIZE)
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+|
+  kmalloc(
+-	COUNT * STRIDE * SIZE
++	array3_size(COUNT, STRIDE, SIZE)
+  , ...)
+)
+
+// Any remaining multi-factor products, first at least 3-factor products,
+// when they're not all constants...
+@@
+expression E1, E2, E3;
+constant C1, C2, C3;
+@@
+
+(
+  kmalloc(C1 * C2 * C3, ...)
+|
+  kmalloc(
+-	(E1) * E2 * E3
++	array3_size(E1, E2, E3)
+  , ...)
+|
+  kmalloc(
+-	(E1) * (E2) * E3
++	array3_size(E1, E2, E3)
+  , ...)
+|
+  kmalloc(
+-	(E1) * (E2) * (E3)
++	array3_size(E1, E2, E3)
+  , ...)
+|
+  kmalloc(
+-	E1 * E2 * E3
++	array3_size(E1, E2, E3)
+  , ...)
+)
+
+// And then all remaining 2 factors products when they're not all constants,
+// keeping sizeof() as the second factor argument.
+@@
+expression THING, E1, E2;
+type TYPE;
+constant C1, C2, C3;
+@@
+
+(
+  kmalloc(sizeof(THING) * C2, ...)
+|
+  kmalloc(sizeof(TYPE) * C2, ...)
+|
+  kmalloc(C1 * C2 * C3, ...)
+|
+  kmalloc(C1 * C2, ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * (E2)
++	E2, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(TYPE) * E2
++	E2, sizeof(TYPE)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * (E2)
++	E2, sizeof(THING)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	sizeof(THING) * E2
++	E2, sizeof(THING)
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	(E1) * E2
++	E1, E2
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	(E1) * (E2)
++	E1, E2
+  , ...)
+|
+- kmalloc
++ kmalloc_array
+  (
+-	E1 * E2
++	E1, E2
+  , ...)
+)
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ fs/cifs/asn1.c      | 2 +-
+ fs/cifs/cifsacl.c   | 4 ++--
+ fs/cifs/inode.c     | 2 +-
+ fs/cifs/smb2pdu.c   | 6 +++---
+ fs/cifs/transport.c | 8 ++++----
+ 5 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/fs/cifs/asn1.c b/fs/cifs/asn1.c
+index a3b56544c21b..3d19595eb352 100644
+--- a/fs/cifs/asn1.c
++++ b/fs/cifs/asn1.c
+@@ -428,7 +428,7 @@ asn1_oid_decode(struct asn1_ctx *ctx,
+ 	if (size < 2 || size > UINT_MAX/sizeof(unsigned long))
+ 		return 0;
+ 
+-	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
++	*oid = kmalloc_array(size, sizeof(unsigned long), GFP_ATOMIC);
+ 	if (*oid == NULL)
+ 		return 0;
+ 
+diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
+index 13a8a77322c9..1d377b7f2860 100644
+--- a/fs/cifs/cifsacl.c
++++ b/fs/cifs/cifsacl.c
+@@ -747,8 +747,8 @@ static void parse_dacl(struct cifs_acl *pdacl, char *end_of_acl,
+ 
+ 		if (num_aces > ULONG_MAX / sizeof(struct cifs_ace *))
+ 			return;
+-		ppace = kmalloc(num_aces * sizeof(struct cifs_ace *),
+-				GFP_KERNEL);
++		ppace = kmalloc_array(num_aces, sizeof(struct cifs_ace *),
++				      GFP_KERNEL);
+ 		if (!ppace)
+ 			return;
+ 
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 745fd7fe8d0e..a94071c7b408 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -1792,7 +1792,7 @@ cifs_rename2(struct inode *source_dir, struct dentry *source_dentry,
+ 		 * with unix extensions enabled.
+ 		 */
+ 		info_buf_source =
+-			kmalloc(2 * sizeof(FILE_UNIX_BASIC_INFO),
++			kmalloc_array(2, sizeof(FILE_UNIX_BASIC_INFO),
+ 					GFP_KERNEL);
+ 		if (info_buf_source == NULL) {
+ 			rc = -ENOMEM;
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index 48e2004c75fb..af032e1a3eac 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -3471,7 +3471,7 @@ send_set_info(const unsigned int xid, struct cifs_tcon *tcon,
+ 	if (!num)
+ 		return -EINVAL;
+ 
+-	iov = kmalloc(sizeof(struct kvec) * num, GFP_KERNEL);
++	iov = kmalloc_array(num, sizeof(struct kvec), GFP_KERNEL);
+ 	if (!iov)
+ 		return -ENOMEM;
+ 
+@@ -3535,7 +3535,7 @@ SMB2_rename(const unsigned int xid, struct cifs_tcon *tcon,
+ 	int rc;
+ 	int len = (2 * UniStrnlen((wchar_t *)target_file, PATH_MAX));
+ 
+-	data = kmalloc(sizeof(void *) * 2, GFP_KERNEL);
++	data = kmalloc_array(2, sizeof(void *), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+@@ -3583,7 +3583,7 @@ SMB2_set_hardlink(const unsigned int xid, struct cifs_tcon *tcon,
+ 	int rc;
+ 	int len = (2 * UniStrnlen((wchar_t *)target_file, PATH_MAX));
+ 
+-	data = kmalloc(sizeof(void *) * 2, GFP_KERNEL);
++	data = kmalloc_array(2, sizeof(void *), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 24887a0898c0..1f1a68f89110 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -844,8 +844,8 @@ SendReceive2(const unsigned int xid, struct cifs_ses *ses,
+ 	int rc;
+ 
+ 	if (n_vec + 1 > CIFS_MAX_IOV_SIZE) {
+-		new_iov = kmalloc(sizeof(struct kvec) * (n_vec + 1),
+-				  GFP_KERNEL);
++		new_iov = kmalloc_array(n_vec + 1, sizeof(struct kvec),
++					GFP_KERNEL);
+ 		if (!new_iov) {
+ 			/* otherwise cifs_send_recv below sets resp_buf_type */
+ 			*resp_buf_type = CIFS_NO_BUFFER;
+@@ -886,8 +886,8 @@ smb2_send_recv(const unsigned int xid, struct cifs_ses *ses,
+ 	__be32 rfc1002_marker;
+ 
+ 	if (n_vec + 1 > CIFS_MAX_IOV_SIZE) {
+-		new_iov = kmalloc(sizeof(struct kvec) * (n_vec + 1),
+-				  GFP_KERNEL);
++		new_iov = kmalloc_array(n_vec + 1, sizeof(struct kvec),
++					GFP_KERNEL);
+ 		if (!new_iov)
+ 			return -ENOMEM;
+ 	} else
+-- 
+2.17.1
+

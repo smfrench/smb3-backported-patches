@@ -1,7 +1,7 @@
 From b327a717e506980399464e304e363f94f95eb7a1 Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Wed, 24 Jan 2018 13:46:10 +0100
-Subject: [PATCH 53/66] CIFS: make IPC a regular tcon
+Subject: [PATCH 053/267] CIFS: make IPC a regular tcon
 
 * Remove ses->ipc_tid.
 * Make IPC$ regular tcon.
@@ -31,10 +31,10 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 ---
  fs/cifs/cifsglob.h |  14 ++---
- fs/cifs/cifssmb.c  |   7 +--
- fs/cifs/connect.c  | 150 ++++++++++++++++++++++++++++++++++++++++-------------
+ fs/cifs/cifssmb.c  |   7 ++-
+ fs/cifs/connect.c  | 150 ++++++++++++++++++++++++++++++++++-----------
  fs/cifs/inode.c    |   2 +-
- fs/cifs/smb2pdu.c  |  36 +++----------
+ fs/cifs/smb2pdu.c  |  36 +++--------
  5 files changed, 133 insertions(+), 76 deletions(-)
 
 diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
@@ -469,5 +469,5 @@ index 7900aec7f92f..2943adc754e4 100644
  	/*
  	 * Get the reference to server struct to be sure that the last call of
 -- 
-2.14.1
+2.17.1
 

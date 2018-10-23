@@ -1,7 +1,7 @@
 From 9762c2d080926b7c292cb7c64ca6030e88d6a6e4 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:43 -0700
-Subject: [PATCH 42/66] CIFS: SMBD: Upper layer sends data via RDMA send
+Subject: [PATCH 042/267] CIFS: SMBD: Upper layer sends data via RDMA send
 
 With SMB Direct connected, use it for sending data via RDMA send.
 
@@ -47,5 +47,5 @@ index 510f41a435c8..9779b3292d8e 100644
  		cifs_dbg(VFS, "Error %d sending data on socket to server\n",
  			 rc);
 -- 
-2.14.1
+2.17.1
 

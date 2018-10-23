@@ -1,7 +1,7 @@
 From ab2c64330963a9d96c43751d83d133df20b04b19 Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Fri, 26 Jan 2018 16:58:32 -0600
-Subject: [PATCH 61/66] update internal version number for cifs.ko
+Subject: [PATCH 061/267] update internal version number for cifs.ko
 
 To version 2.11
 
@@ -22,5 +22,5 @@ index 5a10e566f0e6..013ba2aed8d9 100644
 +#define CIFS_VERSION   "2.11"
  #endif				/* _CIFSFS_H */
 -- 
-2.14.1
+2.17.1
 

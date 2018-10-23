@@ -1,7 +1,7 @@
 From 97f4b7276b829a8927ac903a119bef2f963ccc58 Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Thu, 25 Jan 2018 15:59:39 +0100
-Subject: [PATCH 57/66] CIFS: zero sensitive data when freeing
+Subject: [PATCH 057/267] CIFS: zero sensitive data when freeing
 
 also replaces memset()+kfree() by kzfree().
 
@@ -96,5 +96,5 @@ index eea93ac15ef0..a0dbced4a45c 100644
  }
  
 -- 
-2.14.1
+2.17.1
 

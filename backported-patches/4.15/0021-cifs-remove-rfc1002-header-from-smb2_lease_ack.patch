@@ -1,7 +1,7 @@
 From 8eb7998e791fdba366f3c2b7d95b40daf313509f Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Tue, 21 Nov 2017 11:04:37 +1100
-Subject: [PATCH 21/66] cifs: remove rfc1002 header from smb2_lease_ack
+Subject: [PATCH 021/267] cifs: remove rfc1002 header from smb2_lease_ack
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -70,5 +70,5 @@ index da6a8ec885d1..19d34881815f 100644
  	__le16 Reserved;
  	__le32 Flags;
 -- 
-2.14.1
+2.17.1
 

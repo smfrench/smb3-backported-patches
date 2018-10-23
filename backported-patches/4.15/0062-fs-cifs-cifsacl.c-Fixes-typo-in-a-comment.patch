@@ -1,7 +1,7 @@
 From 36c7ce4a17f220398e12e588ea3484265df4c41c Mon Sep 17 00:00:00 2001
 From: Achilles Gaikwad <achillesgaikwad@gmail.com>
 Date: Sun, 28 Jan 2018 13:39:48 +0530
-Subject: [PATCH 62/66] fs/cifs/cifsacl.c Fixes typo in a comment
+Subject: [PATCH 062/267] fs/cifs/cifsacl.c Fixes typo in a comment
 
 Signed-off-by: Achilles Gaikwad <achillesgaikwad@gmail.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -23,5 +23,5 @@ index b98436f5c7c7..13a8a77322c9 100644
  cifs_acl_to_fattr(struct cifs_sb_info *cifs_sb, struct cifs_fattr *fattr,
  		  struct inode *inode, const char *path,
 -- 
-2.14.1
+2.17.1
 

@@ -1,7 +1,8 @@
 From 6b314714ff6337465a730195952e1b1f10d97063 Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Thu, 25 Jan 2018 09:28:25 -0600
-Subject: [PATCH 58/66] move a few externs to smbdirect.h to eliminate warning
+Subject: [PATCH 058/267] move a few externs to smbdirect.h to eliminate
+ warning
 
 Quiet minor sparse warnings in new SMB3 rdma patch series
 ("symbol was not declared ...") by moving these externs to smbdirect.h
@@ -54,5 +55,5 @@ index fdb8df84fa1f..f9038daea194 100644
  	KEEP_ALIVE_NONE,
  	KEEP_ALIVE_PENDING,
 -- 
-2.14.1
+2.17.1
 

@@ -1,0 +1,31 @@
+From a5240cbde22c86c606c6462d32aea0648c21fdc3 Mon Sep 17 00:00:00 2001
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Sun, 15 Apr 2018 00:58:25 +0530
+Subject: [PATCH 102/267] fs: cifs: Adding new return type vm_fault_t
+
+Use new return type vm_fault_t for page_mkwrite
+handler.
+
+Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
+Signed-off-by: Steve French <stfrench@microsoft.com>
+---
+ fs/cifs/file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index 4bcd4e838b47..23fd430fe74a 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -3462,7 +3462,7 @@ cifs_read(struct file *file, char *read_data, size_t read_size, loff_t *offset)
+  * If the page is mmap'ed into a process' page tables, then we need to make
+  * sure that it doesn't change while being written back.
+  */
+-static int
++static vm_fault_t
+ cifs_page_mkwrite(struct vm_fault *vmf)
+ {
+ 	struct page *page = vmf->page;
+-- 
+2.17.1
+

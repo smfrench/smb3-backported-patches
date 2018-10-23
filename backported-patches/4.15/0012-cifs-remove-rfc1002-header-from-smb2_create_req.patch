@@ -1,7 +1,7 @@
 From 4f33bc35875ae6df5058f5f646fd3f0d3f7c8b04 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Mon, 20 Nov 2017 11:24:38 +1100
-Subject: [PATCH 12/66] cifs: remove rfc1002 header from smb2_create_req
+Subject: [PATCH 012/267] cifs: remove rfc1002 header from smb2_create_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <smfrench@gmail.com>
@@ -142,5 +142,5 @@ index 4f80b95d02ae..6e1874a81014 100644
  	__u8   SecurityFlags;
  	__u8   RequestedOplockLevel;
 -- 
-2.14.1
+2.17.1
 

@@ -1,7 +1,7 @@
 From 2026b06e9ce8521dae1a71654dc5a39e7ce3b871 Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Wed, 24 Jan 2018 23:07:41 -0600
-Subject: [PATCH 56/66] Cleanup some minor endian issues in smb3 rdma
+Subject: [PATCH 056/267] Cleanup some minor endian issues in smb3 rdma
 
 Minor cleanup of some sparse warnings (including a few misc
 endian fixes for the new smb3 rdma code)
@@ -125,5 +125,5 @@ index f9234ed83a60..5130492847eb 100644
  {
  	int ret;
 -- 
-2.14.1
+2.17.1
 

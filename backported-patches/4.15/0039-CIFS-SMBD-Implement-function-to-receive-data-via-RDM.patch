@@ -1,8 +1,8 @@
 From f64b78fd1835d1d764685b0c80c292c5d3daaa07 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Wed, 22 Nov 2017 17:38:40 -0700
-Subject: [PATCH 39/66] CIFS: SMBD: Implement function to receive data via RDMA
- receive
+Subject: [PATCH 039/267] CIFS: SMBD: Implement function to receive data via
+ RDMA receive
 
 On the receive path, the transport maintains receive buffers and a reassembly
 queue for transferring payload via RDMA recv. There is data copy in the
@@ -19,7 +19,7 @@ Signed-off-by: Steve French <smfrench@gmail.com>
 Reviewed-by: Pavel Shilovsky <pshilov@microsoft.com>
 Reviewed-by: Ronnie Sahlberg <lsahlber@redhat.com>
 ---
- fs/cifs/smbdirect.c | 228 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/cifs/smbdirect.c | 228 ++++++++++++++++++++++++++++++++++++++++++++
  fs/cifs/smbdirect.h |   7 ++
  2 files changed, 235 insertions(+)
 
@@ -313,5 +313,5 @@ index f0ce934650c1..c072a68e1321 100644
  
  #endif
 -- 
-2.14.1
+2.17.1
 

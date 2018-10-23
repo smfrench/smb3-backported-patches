@@ -1,7 +1,7 @@
 From 5f60a56494ea5518376b274dd93b3ceee9a783fb Mon Sep 17 00:00:00 2001
 From: Steve French <smfrench@gmail.com>
 Date: Mon, 5 Feb 2018 14:46:18 -0600
-Subject: [PATCH 66/66] Add missing structs and defines from recent SMB3.1.1
+Subject: [PATCH 066/267] Add missing structs and defines from recent SMB3.1.1
  documentation
 
 The last two updates to MS-SMB2 protocol documentation added various
@@ -11,7 +11,7 @@ Add missing defines and structs to smb2pdu.h
 Signed-off-by: Steve French <smfrench@gmail.com>
 Reviewed-by: Ronnie Sahlberg <lsahlber@redhat.com>
 ---
- fs/cifs/smb2pdu.h | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/cifs/smb2pdu.h | 114 +++++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 112 insertions(+), 2 deletions(-)
 
 diff --git a/fs/cifs/smb2pdu.h b/fs/cifs/smb2pdu.h
@@ -175,5 +175,5 @@ index 6eb9f9691ed4..2a2b34ccaf49 100644
  #define SMB2_LEASE_KEY_SIZE 16
  
 -- 
-2.14.1
+2.17.1
 

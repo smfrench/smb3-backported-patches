@@ -1,7 +1,7 @@
 From 9775468020dad9c4e39d78b3d2d361136abecce0 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 9 Nov 2017 12:14:20 +1100
-Subject: [PATCH 08/66] cifs: remove rfc1002 header from smb2_ioctl_req
+Subject: [PATCH 008/267] cifs: remove rfc1002 header from smb2_ioctl_req
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Reviewed-by: Aurelien Aptel <aaptel@suse.com>
@@ -95,5 +95,5 @@ index 5404207d9ee7..2c743d338a11 100644
  	__u16 Reserved;
  	__le32 CtlCode;
 -- 
-2.14.1
+2.17.1
 

@@ -1,7 +1,7 @@
 From 21ad9487ca3250c90ec36d68a8a3ee9f659450e3 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Mon, 20 Nov 2017 11:24:43 +1100
-Subject: [PATCH 19/66] cifs: remove rfc1002 header from smb2_oplock_break we
+Subject: [PATCH 019/267] cifs: remove rfc1002 header from smb2_oplock_break we
  get from server
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
@@ -94,5 +94,5 @@ index 9157d95d0c4e..da6a8ec885d1 100644
  	__le16 StructureSize; /* Must be 24 */
  	__u8   OplockLevel;
 -- 
-2.14.1
+2.17.1
 

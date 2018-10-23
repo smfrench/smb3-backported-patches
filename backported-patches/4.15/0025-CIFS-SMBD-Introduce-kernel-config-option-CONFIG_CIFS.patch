@@ -1,7 +1,7 @@
 From 2b6ed88037cf11fadbf74b4a676aed5e1f6f39c3 Mon Sep 17 00:00:00 2001
 From: Long Li <longli@microsoft.com>
 Date: Tue, 7 Nov 2017 01:54:54 -0700
-Subject: [PATCH 25/66] CIFS: SMBD: Introduce kernel config option
+Subject: [PATCH 025/267] CIFS: SMBD: Introduce kernel config option
  CONFIG_CIFS_SMB_DIRECT
 
 Build SMB Direct code when this option is set.
@@ -34,5 +34,5 @@ index d5b2e12b5d02..500fd69fb58b 100644
  	  bool "Provide CIFS client caching support"
  	  depends on CIFS=m && FSCACHE || CIFS=y && FSCACHE=y
 -- 
-2.14.1
+2.17.1
 
