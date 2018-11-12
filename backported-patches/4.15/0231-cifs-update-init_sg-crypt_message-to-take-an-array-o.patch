@@ -1,7 +1,7 @@
 From b2c96de7fe3cd306df039c89727cb137b89d82ef Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 1 Aug 2018 09:26:11 +1000
-Subject: [PATCH 231/267] cifs: update init_sg, crypt_message to take an array
+Subject: [PATCH 231/328] cifs: update init_sg, crypt_message to take an array
  of rqst
 
 These are used for SMB3 encryption and compounded requests.

@@ -1,0 +1,55 @@
+From 42ec3d4c02187a18e27ff94b409ec27234bf2ffd Mon Sep 17 00:00:00 2001
+From: "Darrick J. Wong" <darrick.wong@oracle.com>
+Date: Tue, 30 Oct 2018 10:41:49 +1100
+Subject: [PATCH 317/328] vfs: make remap_file_range functions take and return
+ bytes completed
+
+Change the remap_file_range functions to take a number of bytes to
+operate upon and return the number of bytes they operated on.  This is a
+requirement for allowing fs implementations to return short clone/dedupe
+results to the user, which will enable us to obey resource limits in a
+graceful manner.
+
+A subsequent patch will enable copy_file_range to signal to the
+->clone_file_range implementation that it can handle a short length,
+which will be returned in the function's return value.  For now the
+short return is not implemented anywhere so the behavior won't change --
+either copy_file_range manages to clone the entire range or it tries an
+alternative.
+
+Neither clone ioctl can take advantage of this, alas.
+
+Signed-off-by: Darrick J. Wong <darrick.wong@oracle.com>
+Reviewed-by: Amir Goldstein <amir73il@gmail.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ fs/cifs/cifsfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index e8144d0dcde2..5ca71c6c8be2 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -975,8 +975,8 @@ const struct inode_operations cifs_symlink_inode_ops = {
+ 	.listxattr = cifs_listxattr,
+ };
+ 
+-static int cifs_remap_file_range(struct file *src_file, loff_t off,
+-		struct file *dst_file, loff_t destoff, u64 len,
++static loff_t cifs_remap_file_range(struct file *src_file, loff_t off,
++		struct file *dst_file, loff_t destoff, loff_t len,
+ 		unsigned int remap_flags)
+ {
+ 	struct inode *src_inode = file_inode(src_file);
+@@ -1029,7 +1029,7 @@ static int cifs_remap_file_range(struct file *src_file, loff_t off,
+ 	unlock_two_nondirectories(src_inode, target_inode);
+ out:
+ 	free_xid(xid);
+-	return rc;
++	return rc < 0 ? rc : len;
+ }
+ 
+ ssize_t cifs_file_copychunk_range(unsigned int xid,
+-- 
+2.17.1
+

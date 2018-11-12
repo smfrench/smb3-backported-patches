@@ -1,7 +1,7 @@
 From 126c97f4d0d1b5b956e8b0740c81a2b2a2ae548c Mon Sep 17 00:00:00 2001
 From: Nicholas Mc Guire <hofrat@osadl.org>
 Date: Thu, 23 Aug 2018 12:24:02 +0200
-Subject: [PATCH 251/267] cifs: check kmalloc before use
+Subject: [PATCH 251/328] cifs: check kmalloc before use
 
 The kmalloc was not being checked - if it fails issue a warning
 and return -ENOMEM to the caller.

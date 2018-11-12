@@ -1,7 +1,7 @@
 From 8ad8aa353524d89fa2e09522f3078166ff78ec42 Mon Sep 17 00:00:00 2001
 From: Dan Carpenter <dan.carpenter@oracle.com>
 Date: Thu, 6 Sep 2018 12:47:51 +0300
-Subject: [PATCH 260/267] cifs: prevent integer overflow in nxt_dir_entry()
+Subject: [PATCH 260/328] cifs: prevent integer overflow in nxt_dir_entry()
 
 The "old_entry + le32_to_cpu(pDirInfo->NextEntryOffset)" can wrap
 around so I have added a check for integer overflow.

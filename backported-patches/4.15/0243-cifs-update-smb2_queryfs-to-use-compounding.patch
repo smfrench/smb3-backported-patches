@@ -1,7 +1,7 @@
 From 730928c8f4be88e9d6a027a16b1e8fa9c59fc077 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 8 Aug 2018 15:07:49 +1000
-Subject: [PATCH 243/267] cifs: update smb2_queryfs() to use compounding
+Subject: [PATCH 243/328] cifs: update smb2_queryfs() to use compounding
 
 Change smb2_queryfs() to use a Create/QueryInfo/Close compound request.
 

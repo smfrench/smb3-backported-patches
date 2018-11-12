@@ -1,7 +1,7 @@
 From 9da6ec7775d2cd76df53fbf4f1f35f6d490204f5 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Tue, 31 Jul 2018 08:48:22 +1000
-Subject: [PATCH 227/267] cifs: use a refcount to protect open/closing the
+Subject: [PATCH 227/328] cifs: use a refcount to protect open/closing the
  cached file handle
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>

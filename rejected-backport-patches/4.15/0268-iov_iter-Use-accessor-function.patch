@@ -1,0 +1,97 @@
+From 00e23707442a75b404392cef1405ab4fd498de6b Mon Sep 17 00:00:00 2001
+From: David Howells <dhowells@redhat.com>
+Date: Mon, 22 Oct 2018 13:07:28 +0100
+Subject: [PATCH 268/328] iov_iter: Use accessor function
+
+Use accessor functions to access an iterator's type and direction.  This
+allows for the possibility of using some other method of determining the
+type of iterator than if-chains with bitwise-AND conditions.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+ fs/cifs/file.c      |  4 ++--
+ fs/cifs/misc.c      |  2 +-
+ fs/cifs/smbdirect.c | 17 +++++++++++++----
+ 3 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index 8d41ca7bfcf1..dcdbcb6f09f8 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -2990,7 +2990,7 @@ cifs_readdata_to_iov(struct cifs_readdata *rdata, struct iov_iter *iter)
+ 		size_t copy = min_t(size_t, remaining, PAGE_SIZE);
+ 		size_t written;
+ 
+-		if (unlikely(iter->type & ITER_PIPE)) {
++		if (unlikely(iov_iter_is_pipe(iter))) {
+ 			void *addr = kmap_atomic(page);
+ 
+ 			written = copy_to_iter(addr, copy, iter);
+@@ -3302,7 +3302,7 @@ ssize_t cifs_user_readv(struct kiocb *iocb, struct iov_iter *to)
+ 	if (!is_sync_kiocb(iocb))
+ 		ctx->iocb = iocb;
+ 
+-	if (to->type == ITER_IOVEC)
++	if (iter_is_iovec(to))
+ 		ctx->should_dirty = true;
+ 
+ 	rc = setup_aio_ctx_iter(ctx, to, READ);
+diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
+index 6926685e513c..7b5b960a04b8 100644
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -786,7 +786,7 @@ setup_aio_ctx_iter(struct cifs_aio_ctx *ctx, struct iov_iter *iter, int rw)
+ 	struct page **pages = NULL;
+ 	struct bio_vec *bv = NULL;
+ 
+-	if (iter->type & ITER_KVEC) {
++	if (iov_iter_is_kvec(iter)) {
+ 		memcpy(&ctx->iter, iter, sizeof(struct iov_iter));
+ 		ctx->len = count;
+ 		iov_iter_advance(iter, count);
+diff --git a/fs/cifs/smbdirect.c b/fs/cifs/smbdirect.c
+index 5fdb9a509a97..5b05bf255268 100644
+--- a/fs/cifs/smbdirect.c
++++ b/fs/cifs/smbdirect.c
+@@ -2054,14 +2054,22 @@ int smbd_recv(struct smbd_connection *info, struct msghdr *msg)
+ 
+ 	info->smbd_recv_pending++;
+ 
+-	switch (msg->msg_iter.type) {
+-	case READ | ITER_KVEC:
++	if (iov_iter_rw(&msg->msg_iter) == WRITE) {
++		/* It's a bug in upper layer to get there */
++		cifs_dbg(VFS, "CIFS: invalid msg iter dir %u\n",
++			 iov_iter_rw(&msg->msg_iter));
++		rc = -EINVAL;
++		goto out;
++	}
++
++	switch (iov_iter_type(&msg->msg_iter)) {
++	case ITER_KVEC:
+ 		buf = msg->msg_iter.kvec->iov_base;
+ 		to_read = msg->msg_iter.kvec->iov_len;
+ 		rc = smbd_recv_buf(info, buf, to_read);
+ 		break;
+ 
+-	case READ | ITER_BVEC:
++	case ITER_BVEC:
+ 		page = msg->msg_iter.bvec->bv_page;
+ 		page_offset = msg->msg_iter.bvec->bv_offset;
+ 		to_read = msg->msg_iter.bvec->bv_len;
+@@ -2071,10 +2079,11 @@ int smbd_recv(struct smbd_connection *info, struct msghdr *msg)
+ 	default:
+ 		/* It's a bug in upper layer to get there */
+ 		cifs_dbg(VFS, "CIFS: invalid msg type %d\n",
+-			msg->msg_iter.type);
++			 iov_iter_type(&msg->msg_iter));
+ 		rc = -EINVAL;
+ 	}
+ 
++out:
+ 	info->smbd_recv_pending--;
+ 	wake_up(&info->wait_smbd_recv_pending);
+ 
+-- 
+2.17.1
+

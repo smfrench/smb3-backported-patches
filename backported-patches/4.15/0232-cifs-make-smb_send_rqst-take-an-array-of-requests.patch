@@ -1,7 +1,7 @@
 From 1f3a8f5f7ac3de4abae9d2c118ffaeed1676fe1c Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 1 Aug 2018 09:26:12 +1000
-Subject: [PATCH 232/267] cifs: make smb_send_rqst take an array of requests
+Subject: [PATCH 232/328] cifs: make smb_send_rqst take an array of requests
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <stfrench@microsoft.com>

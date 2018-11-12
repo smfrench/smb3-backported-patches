@@ -1,7 +1,7 @@
 From 296ecbae7fdf209b1e0fb08b8bd82e5e9b637439 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 1 Aug 2018 09:26:17 +1000
-Subject: [PATCH 240/267] cifs: add SMB2_query_info_[init|free]()
+Subject: [PATCH 240/328] cifs: add SMB2_query_info_[init|free]()
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <stfrench@microsoft.com>

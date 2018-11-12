@@ -1,7 +1,7 @@
 From 22783155f4bf956c346a81624ec9258930a6fe06 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 27 Jul 2018 22:01:49 -0500
-Subject: [PATCH 223/267] smb3: don't request leases in symlink creation and
+Subject: [PATCH 223/328] smb3: don't request leases in symlink creation and
  query
 
 Fixes problem pointed out by Pavel in discussions about commit

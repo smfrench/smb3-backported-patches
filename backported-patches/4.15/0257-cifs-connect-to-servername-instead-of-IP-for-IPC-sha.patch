@@ -1,7 +1,7 @@
 From 395a2076b4064f97d3fce03af15210ff2a7bb7f9 Mon Sep 17 00:00:00 2001
 From: Thomas Werschlein <thomas.werschlein@geo.uzh.ch>
 Date: Thu, 30 Aug 2018 18:29:20 +0200
-Subject: [PATCH 257/267] cifs: connect to servername instead of IP for IPC$
+Subject: [PATCH 257/328] cifs: connect to servername instead of IP for IPC$
  share
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

@@ -1,7 +1,7 @@
 From 0595751f267994c3c7027377058e4185b3a28e75 Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Thu, 17 May 2018 16:35:07 +0200
-Subject: [PATCH 264/267] smb2: fix missing files in root share directory
+Subject: [PATCH 264/328] smb2: fix missing files in root share directory
  listing
 
 When mounting a Windows share that is the root of a drive (eg. C$)

@@ -1,7 +1,7 @@
 From bcfb84a996f6fa90b5e6e2954b2accb7a4711097 Mon Sep 17 00:00:00 2001
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 Date: Mon, 3 Sep 2018 13:15:58 +1000
-Subject: [PATCH 258/267] fs/cifs: suppress a string overflow warning
+Subject: [PATCH 258/328] fs/cifs: suppress a string overflow warning
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit

@@ -1,7 +1,7 @@
 From 950132afd59385caf6e2b84e5235d069fa10681d Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Thu, 28 Jun 2018 18:46:40 -0500
-Subject: [PATCH 217/267] cifs: add missing debug entries for kconfig options
+Subject: [PATCH 217/328] cifs: add missing debug entries for kconfig options
 
 /proc/fs/cifs/DebugData displays the features (Kconfig options)
 used to build cifs.ko but it was missing some, and needed comma

@@ -1,7 +1,7 @@
 From e6c47dd0da1e3a484e778046fc10da0b20606a86 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 22 Aug 2018 12:19:24 +1000
-Subject: [PATCH 250/267] cifs: check if SMB2 PDU size has been padded and
+Subject: [PATCH 250/328] cifs: check if SMB2 PDU size has been padded and
  suppress the warning
 
 Some SMB2/3 servers, Win2016 but possibly others too, adds padding

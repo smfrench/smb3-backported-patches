@@ -1,7 +1,7 @@
 From 1995d28f84b3d2a8f586fcd271207f798b80ccd8 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 27 Jul 2018 15:14:04 -0500
-Subject: [PATCH 222/267] smb3: remove per-session operations from per-tree
+Subject: [PATCH 222/328] smb3: remove per-session operations from per-tree
  connection stats
 
 Remove counters from the per-tree connection /proc/fs/cifs/Stats

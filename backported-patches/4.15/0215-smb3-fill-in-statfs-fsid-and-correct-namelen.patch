@@ -1,7 +1,7 @@
 From 21ba3845b59c733a79ed4fe1c4f3732e7ece9df7 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Sun, 24 Jun 2018 23:18:52 -0500
-Subject: [PATCH 215/267] smb3: fill in statfs fsid and correct namelen
+Subject: [PATCH 215/328] smb3: fill in statfs fsid and correct namelen
 
 Fil in the correct namelen (typically 255 not 4096) in the
 statfs response and also fill in a reasonably unique fsid

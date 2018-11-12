@@ -1,7 +1,7 @@
 From 7420451f6a109f7f8f1bf283f34d08eba3259fb3 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Tue, 19 Jun 2018 14:34:08 -0500
-Subject: [PATCH 212/267] cifs: allow disabling insecure dialects in the config
+Subject: [PATCH 212/328] cifs: allow disabling insecure dialects in the config
 
 allow disabling cifs (SMB1 ie vers=1.0) and vers=2.0 in the
 config for the build of cifs.ko if want to always prevent mounting

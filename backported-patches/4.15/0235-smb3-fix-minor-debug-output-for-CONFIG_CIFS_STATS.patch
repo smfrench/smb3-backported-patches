@@ -1,7 +1,7 @@
 From d258650004617fbd5dfe97d77d26fb37187d06e9 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Wed, 1 Aug 2018 22:34:04 -0500
-Subject: [PATCH 235/267] smb3: fix minor debug output for CONFIG_CIFS_STATS
+Subject: [PATCH 235/328] smb3: fix minor debug output for CONFIG_CIFS_STATS
 
 CONFIG_CIFS_STATS is now always enabled (to simplify the
 code and since the STATS are important for some common

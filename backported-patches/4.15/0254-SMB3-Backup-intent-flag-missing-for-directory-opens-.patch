@@ -1,7 +1,7 @@
 From 5e19697b56a64004e2d0ff1bb952ea05493c088f Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Mon, 27 Aug 2018 17:04:13 -0500
-Subject: [PATCH 254/267] SMB3: Backup intent flag missing for directory opens
+Subject: [PATCH 254/328] SMB3: Backup intent flag missing for directory opens
  with backupuid mounts
 
 When "backup intent" is requested on the mount (e.g. backupuid or

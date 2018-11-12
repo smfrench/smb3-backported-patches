@@ -1,7 +1,7 @@
 From c15e3f19a6d5c89b1209dc94b40e568177cb0921 Mon Sep 17 00:00:00 2001
 From: Jon Kuhn <jkuhn@barracuda.com>
 Date: Mon, 9 Jul 2018 14:33:14 +0000
-Subject: [PATCH 253/267] fs/cifs: don't translate SFM_SLASH (U+F026) to
+Subject: [PATCH 253/328] fs/cifs: don't translate SFM_SLASH (U+F026) to
  backslash
 
 When a Mac client saves an item containing a backslash to a file server

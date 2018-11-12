@@ -1,0 +1,29 @@
+From be12af3ef5e61ebc44d065e121424ac605d7bb8e Mon Sep 17 00:00:00 2001
+From: Al Viro <viro@zeniv.linux.org.uk>
+Date: Fri, 8 Jun 2018 11:44:56 -0400
+Subject: [PATCH 205/328] getting rid of 'opened' argument of ->atomic_open() -
+ part 1
+
+'opened' argument of finish_open() is unused.  Kill it.
+
+Signed-off-by Al Viro <viro@zeniv.linux.org.uk>
+---
+ fs/cifs/dir.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
+index 21d7e393900e..891bfd62e67a 100644
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -541,7 +541,7 @@ cifs_atomic_open(struct inode *inode, struct dentry *direntry,
+ 	if ((oflags & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL))
+ 		file->f_mode |= FMODE_CREATED;
+ 
+-	rc = finish_open(file, direntry, generic_file_open, opened);
++	rc = finish_open(file, direntry, generic_file_open);
+ 	if (rc) {
+ 		if (server->ops->close)
+ 			server->ops->close(xid, tcon, &fid);
+-- 
+2.17.1
+

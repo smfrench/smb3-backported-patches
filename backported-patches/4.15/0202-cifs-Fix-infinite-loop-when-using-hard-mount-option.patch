@@ -1,7 +1,7 @@
 From 7ffbe65578b44fafdef577a360eb0583929f7c6e Mon Sep 17 00:00:00 2001
 From: Paulo Alcantara <paulo@paulo.ac>
 Date: Thu, 5 Jul 2018 13:46:34 -0300
-Subject: [PATCH 202/267] cifs: Fix infinite loop when using hard mount option
+Subject: [PATCH 202/328] cifs: Fix infinite loop when using hard mount option
 
 For every request we send, whether it is SMB1 or SMB2+, we attempt to
 reconnect tcon (cifs_reconnect_tcon or smb2_reconnect) before carrying

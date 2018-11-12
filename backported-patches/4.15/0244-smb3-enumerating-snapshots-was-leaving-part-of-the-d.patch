@@ -1,7 +1,7 @@
 From e02789a53d71334b067ad72eee5d4e88a0158083 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Thu, 9 Aug 2018 14:33:12 -0500
-Subject: [PATCH 244/267] smb3: enumerating snapshots was leaving part of the
+Subject: [PATCH 244/328] smb3: enumerating snapshots was leaving part of the
  data off end
 
 When enumerating snapshots, the last few bytes of the final

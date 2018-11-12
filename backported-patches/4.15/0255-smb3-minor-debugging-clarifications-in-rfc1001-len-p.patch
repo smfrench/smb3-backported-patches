@@ -1,7 +1,7 @@
 From 25f2573512d7b38bca4c0878109db9600b8b711f Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Wed, 29 Aug 2018 09:22:22 -0500
-Subject: [PATCH 255/267] smb3: minor debugging clarifications in rfc1001 len
+Subject: [PATCH 255/328] smb3: minor debugging clarifications in rfc1001 len
  processing
 
 I ran into some cases where server was returning the wrong length

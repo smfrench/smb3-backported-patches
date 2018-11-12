@@ -1,7 +1,7 @@
 From 7af929d6d05ba5564139718e30d5bc96bdbc716a Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Tue, 2 Oct 2018 18:54:09 -0500
-Subject: [PATCH 267/267] smb3: fix lease break problem introduced by
+Subject: [PATCH 267/328] smb3: fix lease break problem introduced by
  compounding
 
 Fixes problem (discovered by Aurelien) introduced by recent commit:

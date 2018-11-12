@@ -1,7 +1,7 @@
 From 020eec5f712ffb4254233490076cc21600b810db Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Wed, 1 Aug 2018 16:38:07 -0500
-Subject: [PATCH 234/267] smb3: add tracepoint for slow responses
+Subject: [PATCH 234/328] smb3: add tracepoint for slow responses
 
 If responses take longer than one second from the server,
 we can optionally log them to dmesg in current cifs.ko code

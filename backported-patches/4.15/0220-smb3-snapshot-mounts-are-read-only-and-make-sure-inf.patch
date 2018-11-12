@@ -1,7 +1,7 @@
 From 8a69e96e610b3ec8a55f6fd4e44363452838caa7 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 29 Jun 2018 16:06:15 -0500
-Subject: [PATCH 220/267] smb3: snapshot mounts are read-only and make sure
+Subject: [PATCH 220/328] smb3: snapshot mounts are read-only and make sure
  info is displayable about the mount
 
 snapshot mounts were not marked as read-only and did not display the snapshot

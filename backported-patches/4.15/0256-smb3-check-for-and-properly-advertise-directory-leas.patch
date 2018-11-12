@@ -1,7 +1,7 @@
 From f801568332321e2b1e7a8bd26c3e4913a312a2ec Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 31 Aug 2018 15:12:10 -0500
-Subject: [PATCH 256/267] smb3: check for and properly advertise directory
+Subject: [PATCH 256/328] smb3: check for and properly advertise directory
  lease support
 
 Although servers will typically ignore unsupported features,

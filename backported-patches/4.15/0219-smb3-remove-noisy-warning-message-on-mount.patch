@@ -1,7 +1,7 @@
 From c3ed44026cd07fda5976ecb79225759901a160b4 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Thu, 28 Jun 2018 22:53:39 -0500
-Subject: [PATCH 219/267] smb3: remove noisy warning message on mount
+Subject: [PATCH 219/328] smb3: remove noisy warning message on mount
 
 Some servers, like Samba, don't support the fsctl for
 query_network_interface_info so don't log a noisy warning

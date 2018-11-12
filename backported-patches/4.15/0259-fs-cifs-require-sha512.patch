@@ -1,7 +1,7 @@
 From 5890184d2b506f88886b7322d7d44464453bd3a6 Mon Sep 17 00:00:00 2001
 From: Stefan Metzmacher <metze@samba.org>
 Date: Fri, 7 Sep 2018 18:24:17 +0200
-Subject: [PATCH 259/267] fs/cifs: require sha512
+Subject: [PATCH 259/328] fs/cifs: require sha512
 
 This got lost in commit 0fdfef9aa7ee68ddd508aef7c98630cfc054f8d6,
 which removed CONFIG_CIFS_SMB311.

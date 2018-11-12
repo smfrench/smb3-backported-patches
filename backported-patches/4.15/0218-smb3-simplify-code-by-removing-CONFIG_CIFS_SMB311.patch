@@ -1,7 +1,7 @@
 From 0fdfef9aa7ee68ddd508aef7c98630cfc054f8d6 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Thu, 28 Jun 2018 19:30:23 -0500
-Subject: [PATCH 218/267] smb3: simplify code by removing CONFIG_CIFS_SMB311
+Subject: [PATCH 218/328] smb3: simplify code by removing CONFIG_CIFS_SMB311
 
 We really, really want to be encouraging use of secure dialects,
 and SMB3.1.1 offers useful security features, and will soon

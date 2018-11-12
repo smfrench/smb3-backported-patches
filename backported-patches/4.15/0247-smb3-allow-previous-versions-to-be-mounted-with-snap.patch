@@ -1,7 +1,7 @@
 From cdeaf9d04a5a0f51220d2f025385c553220bfb5c Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 10 Aug 2018 02:25:06 -0500
-Subject: [PATCH 247/267] smb3: allow previous versions to be mounted with
+Subject: [PATCH 247/328] smb3: allow previous versions to be mounted with
  snapshot= mount parm
 
 mounting with the "snapshots=" mount parm allows a read-only

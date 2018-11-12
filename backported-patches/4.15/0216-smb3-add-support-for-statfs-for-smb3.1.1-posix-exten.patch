@@ -1,7 +1,7 @@
 From 2d304217832ea720337e7a6aa012aa828a77f9d4 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Sun, 24 Jun 2018 23:28:12 -0500
-Subject: [PATCH 216/267] smb3: add support for statfs for smb3.1.1 posix
+Subject: [PATCH 216/328] smb3: add support for statfs for smb3.1.1 posix
  extensions
 
 Output now matches expected stat -f output for all fields

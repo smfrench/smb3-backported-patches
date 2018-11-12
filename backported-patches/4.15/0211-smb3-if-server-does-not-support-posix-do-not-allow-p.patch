@@ -1,7 +1,7 @@
 From 8505c8bfd85a260c9dc5c47e15bd8c5357fcbcd2 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Mon, 18 Jun 2018 14:01:59 -0500
-Subject: [PATCH 211/267] smb3: if server does not support posix do not allow
+Subject: [PATCH 211/328] smb3: if server does not support posix do not allow
  posix mount option
 
 If user specifies "posix" on an SMB3.11 mount, then fail the mount

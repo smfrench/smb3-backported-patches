@@ -1,7 +1,7 @@
 From 256b4c3f03d77d8c0dc69e3a6ceb3afd0d1810bd Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Tue, 19 Jun 2018 15:18:48 -0700
-Subject: [PATCH 213/267] CIFS: fix memory leak and remove dead code
+Subject: [PATCH 213/328] CIFS: fix memory leak and remove dead code
 
 also fixes error code in smb311_posix_mkdir() (where
 the error assignment needs to go before the goto)

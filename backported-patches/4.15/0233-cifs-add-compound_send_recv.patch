@@ -1,7 +1,7 @@
 From e0bba0b8548179b696e86c158ea8f45f2ef6ad14 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 1 Aug 2018 09:26:13 +1000
-Subject: [PATCH 233/267] cifs: add compound_send_recv()
+Subject: [PATCH 233/328] cifs: add compound_send_recv()
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <stfrench@microsoft.com>

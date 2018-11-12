@@ -1,7 +1,7 @@
 From 4e34feb5e96328df6a362c88098502b07c1b1e69 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 30 Aug 2018 10:13:00 +1000
-Subject: [PATCH 266/267] cifs: only wake the thread for the very last PDU in a
+Subject: [PATCH 266/328] cifs: only wake the thread for the very last PDU in a
  compound
 
 For compounded PDUs we whould only wake the waiting thread for the

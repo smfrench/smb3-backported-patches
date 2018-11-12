@@ -1,7 +1,7 @@
 From 8eb4ecfab03d21146e144b0693ce96839d58202d Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Wed, 1 Aug 2018 09:26:16 +1000
-Subject: [PATCH 239/267] cifs: add SMB2_close_init()/SMB2_close_free()
+Subject: [PATCH 239/328] cifs: add SMB2_close_init()/SMB2_close_free()
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>
 Signed-off-by: Steve French <stfrench@microsoft.com>

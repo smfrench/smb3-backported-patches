@@ -1,7 +1,7 @@
 From c281bc0c7412308c7ec0888904f7c99353da4796 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Wed, 1 Aug 2018 00:56:12 -0500
-Subject: [PATCH 230/267] smb3: fix reset of bytes read and written stats
+Subject: [PATCH 230/328] smb3: fix reset of bytes read and written stats
 
 echo 0 > /proc/fs/cifs/Stats is supposed to reset the stats
 but there were four (see example below) that were not reset

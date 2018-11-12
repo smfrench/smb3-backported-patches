@@ -1,7 +1,7 @@
 From c4f7173ac3b7e22934e51f0121833642a581d723 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Fri, 10 Aug 2018 18:46:58 -0500
-Subject: [PATCH 248/267] smb3: create smb3 equivalent alias for cifs
+Subject: [PATCH 248/328] smb3: create smb3 equivalent alias for cifs
  pseudo-xattrs
 
 We really, really don't want to be encouraging people to use

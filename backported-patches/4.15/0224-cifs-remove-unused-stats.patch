@@ -1,7 +1,7 @@
 From 06188fcf9c068a2a8e82ad1e2510a008373150e2 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Sun, 29 Jul 2018 17:13:39 -0500
-Subject: [PATCH 224/267] cifs: remove unused stats
+Subject: [PATCH 224/328] cifs: remove unused stats
 
 These timers were a good idea but weren't used in current code,
 and the idea was cifs specific.  Future patch will add similar timers

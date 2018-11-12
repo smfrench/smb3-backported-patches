@@ -1,7 +1,7 @@
 From 4d8dfafc5cb88fe294a9273a3ef75dd4f9fa1aa2 Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Tue, 21 Aug 2018 11:49:21 +1000
-Subject: [PATCH 249/267] cifs: create a define for how many iovs we need for
+Subject: [PATCH 249/328] cifs: create a define for how many iovs we need for
  an SMB2_open()
 
 Signed-off-by: Ronnie Sahlberg <lsahlber@redhat.com>

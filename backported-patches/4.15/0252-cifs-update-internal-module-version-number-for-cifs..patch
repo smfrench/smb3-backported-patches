@@ -1,7 +1,7 @@
 From 7753e38286d2bd7380df8be843de83198e2ce492 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Tue, 21 Aug 2018 21:37:53 -0500
-Subject: [PATCH 252/267] cifs: update internal module version number for
+Subject: [PATCH 252/328] cifs: update internal module version number for
  cifs.ko to 2.12
 
 Signed-off-by: Steve French <stfrench@microsoft.com>

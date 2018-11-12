@@ -1,7 +1,7 @@
 From e68a932b0b8e38eaa2111fc3aab31ff66988f1c4 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Mon, 30 Jul 2018 14:23:58 -0500
-Subject: [PATCH 225/267] smb3: add tracepoint for session expired or deleted
+Subject: [PATCH 225/328] smb3: add tracepoint for session expired or deleted
 
 In debugging reconnection problems, want to be able to more easily
 trace cases in which the server has marked the SMB3 session

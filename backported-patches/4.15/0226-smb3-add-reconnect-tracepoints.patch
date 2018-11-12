@@ -1,7 +1,7 @@
 From bf1fdeb7899a86adfbe0b521bee5cf78bb870a14 Mon Sep 17 00:00:00 2001
 From: Steve French <stfrench@microsoft.com>
 Date: Mon, 30 Jul 2018 19:23:09 -0500
-Subject: [PATCH 226/267] smb3: add reconnect tracepoints
+Subject: [PATCH 226/328] smb3: add reconnect tracepoints
 
 Add tracepoints for reconnecting an smb3 session
 

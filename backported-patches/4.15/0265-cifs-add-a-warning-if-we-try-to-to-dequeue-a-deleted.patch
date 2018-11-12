@@ -1,7 +1,7 @@
 From ddf83afb9f60ee58cdec30bb615eff65d00ba05e Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Thu, 30 Aug 2018 10:12:59 +1000
-Subject: [PATCH 265/267] cifs: add a warning if we try to to dequeue a deleted
+Subject: [PATCH 265/328] cifs: add a warning if we try to to dequeue a deleted
  mid
 
 cifs_delete_mid() is called once we are finished handling a mid and we

@@ -1,7 +1,7 @@
 From c1777df1a5d541cda918ff0450c8adcc8b69c2fd Mon Sep 17 00:00:00 2001
 From: Ronnie Sahlberg <lsahlber@redhat.com>
 Date: Fri, 10 Aug 2018 11:03:55 +1000
-Subject: [PATCH 245/267] cifs: add missing support for ACLs in SMB 3.11
+Subject: [PATCH 245/328] cifs: add missing support for ACLs in SMB 3.11
 
 We were missing the methods for get_acl and friends for the 3.11
 dialect.

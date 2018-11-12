@@ -1,0 +1,117 @@
+From aa563d7bca6e882ec2bdae24603c8f016401a144 Mon Sep 17 00:00:00 2001
+From: David Howells <dhowells@redhat.com>
+Date: Sat, 20 Oct 2018 00:57:56 +0100
+Subject: [PATCH 269/328] iov_iter: Separate type from direction and use
+ accessor functions
+
+In the iov_iter struct, separate the iterator type from the iterator
+direction and use accessor functions to access them in most places.
+
+Convert a bunch of places to use switch-statements to access them rather
+then chains of bitwise-AND statements.  This makes it easier to add further
+iterator types.  Also, this can be more efficient as to implement a switch
+of small contiguous integers, the compiler can use ~50% fewer compare
+instructions than it has to use bitwise-and instructions.
+
+Further, cease passing the iterator type into the iterator setup function.
+The iterator function can set that itself.  Only the direction is required.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+ fs/cifs/connect.c   | 4 ++--
+ fs/cifs/misc.c      | 2 +-
+ fs/cifs/smb2ops.c   | 4 ++--
+ fs/cifs/transport.c | 8 +++-----
+ 4 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 52d71b64c0c6..11bcd2fb90b1 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -588,7 +588,7 @@ cifs_read_from_socket(struct TCP_Server_Info *server, char *buf,
+ {
+ 	struct msghdr smb_msg;
+ 	struct kvec iov = {.iov_base = buf, .iov_len = to_read};
+-	iov_iter_kvec(&smb_msg.msg_iter, READ | ITER_KVEC, &iov, 1, to_read);
++	iov_iter_kvec(&smb_msg.msg_iter, READ, &iov, 1, to_read);
+ 
+ 	return cifs_readv_from_socket(server, &smb_msg);
+ }
+@@ -600,7 +600,7 @@ cifs_read_page_from_socket(struct TCP_Server_Info *server, struct page *page,
+ 	struct msghdr smb_msg;
+ 	struct bio_vec bv = {
+ 		.bv_page = page, .bv_len = to_read, .bv_offset = page_offset};
+-	iov_iter_bvec(&smb_msg.msg_iter, READ | ITER_BVEC, &bv, 1, to_read);
++	iov_iter_bvec(&smb_msg.msg_iter, READ, &bv, 1, to_read);
+ 	return cifs_readv_from_socket(server, &smb_msg);
+ }
+ 
+diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
+index 7b5b960a04b8..10cff44832d8 100644
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -857,7 +857,7 @@ setup_aio_ctx_iter(struct cifs_aio_ctx *ctx, struct iov_iter *iter, int rw)
+ 	ctx->bv = bv;
+ 	ctx->len = saved_len - count;
+ 	ctx->npages = npages;
+-	iov_iter_bvec(&ctx->iter, ITER_BVEC | rw, ctx->bv, npages, ctx->len);
++	iov_iter_bvec(&ctx->iter, rw, ctx->bv, npages, ctx->len);
+ 	return 0;
+ }
+ 
+diff --git a/fs/cifs/smb2ops.c b/fs/cifs/smb2ops.c
+index 89985a0a6819..26f8a65b8722 100644
+--- a/fs/cifs/smb2ops.c
++++ b/fs/cifs/smb2ops.c
+@@ -2962,13 +2962,13 @@ handle_read_data(struct TCP_Server_Info *server, struct mid_q_entry *mid,
+ 			return 0;
+ 		}
+ 
+-		iov_iter_bvec(&iter, WRITE | ITER_BVEC, bvec, npages, data_len);
++		iov_iter_bvec(&iter, WRITE, bvec, npages, data_len);
+ 	} else if (buf_len >= data_offset + data_len) {
+ 		/* read response payload is in buf */
+ 		WARN_ONCE(npages > 0, "read data can be either in buf or in pages");
+ 		iov.iov_base = buf + data_offset;
+ 		iov.iov_len = data_len;
+-		iov_iter_kvec(&iter, WRITE | ITER_KVEC, &iov, 1, data_len);
++		iov_iter_kvec(&iter, WRITE, &iov, 1, data_len);
+ 	} else {
+ 		/* read response payload cannot be in both buf and pages */
+ 		WARN_ONCE(1, "buf can not contain only a part of read data");
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index b48f43963da6..146b618802a5 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -307,8 +307,7 @@ __smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
+ 			.iov_base = &rfc1002_marker,
+ 			.iov_len  = 4
+ 		};
+-		iov_iter_kvec(&smb_msg.msg_iter, WRITE | ITER_KVEC, &hiov,
+-			      1, 4);
++		iov_iter_kvec(&smb_msg.msg_iter, WRITE, &hiov, 1, 4);
+ 		rc = smb_send_kvec(server, &smb_msg, &sent);
+ 		if (rc < 0)
+ 			goto uncork;
+@@ -329,8 +328,7 @@ __smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
+ 			size += iov[i].iov_len;
+ 		}
+ 
+-		iov_iter_kvec(&smb_msg.msg_iter, WRITE | ITER_KVEC,
+-			      iov, n_vec, size);
++		iov_iter_kvec(&smb_msg.msg_iter, WRITE, iov, n_vec, size);
+ 
+ 		rc = smb_send_kvec(server, &smb_msg, &sent);
+ 		if (rc < 0)
+@@ -346,7 +344,7 @@ __smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
+ 			rqst_page_get_length(&rqst[j], i, &bvec.bv_len,
+ 					     &bvec.bv_offset);
+ 
+-			iov_iter_bvec(&smb_msg.msg_iter, WRITE | ITER_BVEC,
++			iov_iter_bvec(&smb_msg.msg_iter, WRITE,
+ 				      &bvec, 1, bvec.bv_len);
+ 			rc = smb_send_kvec(server, &smb_msg, &sent);
+ 			if (rc < 0)
+-- 
+2.17.1
+

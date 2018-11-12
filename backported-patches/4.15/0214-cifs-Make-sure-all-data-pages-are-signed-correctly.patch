@@ -1,7 +1,7 @@
 From a12d0c590cc7ae01892f06c5ad6d19580ecdd0de Mon Sep 17 00:00:00 2001
 From: Paulo Alcantara <paulo@paulo.ac>
 Date: Sat, 23 Jun 2018 14:52:25 -0300
-Subject: [PATCH 214/267] cifs: Make sure all data pages are signed correctly
+Subject: [PATCH 214/328] cifs: Make sure all data pages are signed correctly
 
 Check if every data page is signed correctly in sigining helper.
 

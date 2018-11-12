@@ -1,7 +1,7 @@
 From a5c62f4833c2c8e6e0f35367b99b717b78f5c029 Mon Sep 17 00:00:00 2001
 From: Aurelien Aptel <aaptel@suse.com>
 Date: Thu, 2 Aug 2018 16:39:52 +0200
-Subject: [PATCH 237/267] CIFS: fix uninitialized ptr deref in smb2 signing
+Subject: [PATCH 237/328] CIFS: fix uninitialized ptr deref in smb2 signing
 
 server->secmech.sdeschmacsha256 is not properly initialized before
 smb2_shash_allocate(), set shash after that call.
